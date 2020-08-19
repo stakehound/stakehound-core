@@ -4,8 +4,10 @@ import { deployContract, solidity } from "ethereum-waffle";
 import { ethers } from "@nomiclabs/buidler";
 
 import StakedTokenArtifact from "../artifacts/StakedToken.json";
+import MockDownstreamArtifact from "../artifacts/MockDownstream.json";
 
 import { StakedToken } from "../typechain/StakedToken";
+import { MockDownstream } from "../typechain/MockDownstream";
 import { shouldBehaveLikeStakedToken } from "./StakedToken.behavior";
 
 chai.use(solidity);
@@ -26,6 +28,7 @@ setTimeout(async function () {
 
 
       this.stakedToken = (await deployContract(admin, StakedTokenArtifact, [this.name, this.symbol, this.decimals, this.initialSupply])) as StakedToken;
+      this.mockDownstream = (await deployContract(admin, MockDownstreamArtifact, [])) as MockDownstream;
     });
 
     shouldBehaveLikeStakedToken(signers, decimalsMultiplier);

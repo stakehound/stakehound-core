@@ -3,6 +3,7 @@ import { expect } from "chai";
 import { ethers } from "@nomiclabs/buidler";
 import { StakedToken } from "../typechain/StakedToken";
 import { BigNumberish } from "ethers";
+import { MockDownstream } from "../typechain/MockDownstream";
 
 export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultiplier: BigNumberish): void {
   function toTokenAmount(amount: BigNumberish): BigNumberish {
@@ -205,8 +206,33 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
 
 
   describe("External calls", async function () {
+    it("should register a downstream contract and call it on distribution", async function () {
+      const stakedToken: StakedToken = this.stakedToken
+      const mockDownstream: MockDownstream = this.mockDownstream
 
-    // should call dependent contracts on reward distribution
+      let ABI = ["function updateOneArg(uint256 u)"];
+      let iface = new ethers.utils.Interface(ABI);
+      const data = iface.encodeFunctionData("updateOneArg", [12345]);
+
+      await stakedToken.addTransaction(mockDownstream.address, data);
+      expect(await stakedToken.transactionsSize()).to.equal(1);
+
+      await expect(stakedToken.distributeTokens(123))
+        .to.emit(mockDownstream, "FunctionCalled")
+        .withArgs("MockDownstream", "updateOneArg", stakedToken.address);
+    });
+
+    it("should not be callable by others", async function () {
+      const stakedTokenAsUser = this.stakedToken.connect(_signers[1]);
+      const mockDownstream: MockDownstream = this.mockDownstream
+
+      let ABI = ["function updateOneArg(uint256 u)"];
+      let iface = new ethers.utils.Interface(ABI);
+      const data = iface.encodeFunctionData("updateOneArg", [12345]);
+
+      await expect(stakedTokenAsUser.addTransaction(mockDownstream.address, data))
+        .to.be.reverted;
+    });
   });
 
 

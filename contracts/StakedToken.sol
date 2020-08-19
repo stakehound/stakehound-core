@@ -31,8 +31,16 @@ contract StakedToken is IERC20, Ownable {
     string private _symbol;
     uint8 private _decimals;
 
+    struct Transaction {
+        bool enabled;
+        address destination;
+        bytes data;
+    }
 
-    bool private rebasePaused;
+    event TransactionFailed(address indexed destination, uint index, bytes data);
+
+    // Stable ordering is not guaranteed.
+    Transaction[] public transactions;
 
     modifier onlySupplyController() {
         require(msg.sender == supplyController);
@@ -54,8 +62,6 @@ contract StakedToken is IERC20, Ownable {
         _decimals = decimals_;
 
         supplyController = msg.sender;
-
-        rebasePaused = false;
 
         _totalSupply = initialSupply_;
         _sharesPerToken = SHARE_MULTIPLIER;
@@ -93,6 +99,21 @@ contract StakedToken is IERC20, Ownable {
         _totalSupply = _totalShares.div(_sharesPerToken);
 
         emit LogTokenDistribution(_totalSupply);
+
+        // Call downstream transactions
+        for (uint i = 0; i < transactions.length; i++) {
+            Transaction storage t = transactions[i];
+            if (t.enabled) {
+                bool result =
+                    externalCall(t.destination, t.data);
+                if (!result) {
+                    emit TransactionFailed(t.destination, i, t.data);
+                    revert("Transaction Failed");
+                }
+            }
+        }
+
+
         return _totalSupply;
     }
 
@@ -314,6 +335,102 @@ contract StakedToken is IERC20, Ownable {
         _totalShares = _totalShares.sub(shareAmount);
         _totalSupply = _totalSupply.sub(amount);
         emit Transfer(account, address(0), amount);
+    }
+
+
+
+    /**
+     * @notice Adds a transaction that gets called for a downstream receiver of token distributions
+     * @param destination Address of contract destination
+     * @param data Transaction data payload
+     */
+    function addTransaction(address destination, bytes memory data)
+        external
+        onlyOwner
+    {
+        transactions.push(Transaction({
+            enabled: true,
+            destination: destination,
+            data: data
+        }));
+    }
+
+    /**
+     * @param index Index of transaction to remove.
+     *              Transaction ordering may have changed since adding.
+     */
+    function removeTransaction(uint index)
+        external
+        onlyOwner
+    {
+        require(index < transactions.length, "index out of bounds");
+
+        if (index < transactions.length - 1) {
+            transactions[index] = transactions[transactions.length - 1];
+        }
+
+        transactions.pop();
+    }
+
+    /**
+     * @param index Index of transaction. Transaction ordering may have changed since adding.
+     * @param enabled True for enabled, false for disabled.
+     */
+    function setTransactionEnabled(uint index, bool enabled)
+        external
+        onlyOwner
+    {
+        require(index < transactions.length, "index must be in range of stored tx list");
+        transactions[index].enabled = enabled;
+    }
+
+    /**
+     * @return Number of transactions, both enabled and disabled, in transactions list.
+     */
+    function transactionsSize()
+        external
+        view
+        returns (uint256)
+    {
+        return transactions.length;
+    }
+
+    /**
+     * @dev wrapper to call the encoded transactions on downstream consumers.
+     * @param destination Address of destination contract.
+     * @param data The encoded data payload.
+     * @return True on success
+     */
+    function externalCall(address destination, bytes memory data)
+        internal
+        returns (bool)
+    {
+        bool result;
+        assembly {  // solhint-disable-line no-inline-assembly
+            // "Allocate" memory for output
+            // (0x40 is where "free memory" pointer is stored by convention)
+            let outputAddress := mload(0x40)
+
+            // First 32 bytes are the padded length of data, so exclude that
+            let dataAddress := add(data, 32)
+
+            result := call(
+                // 34710 is the value that solidity is currently emitting
+                // It includes callGas (700) + callVeryLow (3, to pay for SUB)
+                // + callValueTransferGas (9000) + callNewAccountGas
+                // (25000, in case the destination address does not exist and needs creating)
+                sub(gas(), 34710),
+
+
+                destination,
+                0, // transfer value in wei
+                dataAddress,
+                mload(data),  // Size of the input, in bytes. Stored in position 0 of the array.
+                outputAddress,
+                0  // Output is ignored, therefore the output size is zero
+            )
+        }
+        return result;
     }
 
 }

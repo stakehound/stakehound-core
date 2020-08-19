@@ -10,6 +10,8 @@ import "./tasks/typechain";
 
 usePlugin("@nomiclabs/buidler-waffle");
 usePlugin("solidity-coverage");
+// usePlugin("buidler-gas-reporter");
+
 
 interface HDAccountsConfigExtended extends HDAccountsConfig {
   url: string;
