@@ -79,6 +79,9 @@
     "prettier": "prettier --config .prettierrc --write \"**/*.{js,json,md,sol,ts}\"",
     "prettier:list-different": "prettier --config .prettierrc --list-different \"**/*.{js,json,md,sol,ts}\"",
     "test": "buidler test",
-    "typechain": "buidler typechain"
+    "typechain": "buidler typechain",
+    "deploy": "buidler run scripts/deploy.ts",
+    "script": "buidler run",
+    "accounts": "buidler accounts"
   }
 }

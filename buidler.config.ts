@@ -12,8 +12,8 @@ usePlugin("@nomiclabs/buidler-waffle");
 usePlugin("solidity-coverage");
 // usePlugin("buidler-gas-reporter");
 
-
-interface HDAccountsConfigExtended extends HDAccountsConfig {
+interface NetworkConfig {
+  accounts: HDAccountsConfig,
   url: string;
 }
 
@@ -21,7 +21,7 @@ interface HDAccountsConfigExtended extends HDAccountsConfig {
  * @dev You must have a `.env` file. Follow the example in `.env.example`.
  * @param {string} network The name of the testnet
  */
-function createHDAccountConfig(network: string): HDAccountsConfigExtended {
+function createHDAccountConfig(network: string): NetworkConfig {
   if (!process.env.MNEMONIC) {
     console.log("Please set your MNEMONIC in a .env file");
     process.exit(1);
@@ -33,9 +33,11 @@ function createHDAccountConfig(network: string): HDAccountsConfigExtended {
   }
 
   return {
-    initialIndex: 0,
-    mnemonic: process.env.MNEMONIC,
-    path: "m/44'/60'/0'/0",
+    accounts: {
+      initialIndex: 0,
+      mnemonic: process.env.MNEMONIC,
+      path: "m/44'/60'/0'/0",
+    },
     url: `https://${network}.infura.io/v3/${process.env.INFURA_API_KEY}`,
   };
 }
@@ -48,6 +50,10 @@ const config: BuidlerConfig = {
   networks: {
     buidlerevm: {
       chainId: 31337,
+    },
+    local: {
+      url: "http://127.0.0.1:7545"
+
     },
     coverage: {
       url: "http://127.0.0.1:8555",

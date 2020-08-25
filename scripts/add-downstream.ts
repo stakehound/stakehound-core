@@ -4,6 +4,7 @@
 // Runtime Environment's members available in the global scope.
 import { ethers } from "@nomiclabs/buidler";
 import { Contract, ContractFactory } from "ethers";
+import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
   // Buidler always runs the compile task when running scripts through it.
@@ -11,21 +12,20 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
-  const [deployer] = await ethers.getSigners();
-
-  console.log(
-    "Deploying contracts with the account:",
-    await deployer.getAddress()
-  );
-
-  console.log("Account balance:", (await deployer.getBalance()).toString());
-
-  // We get the contract to deploy
+  const stakedTokenAddress = '0xEc1b213A3577f8d74e1d3970b8643D50C33C7BdE';
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken: Contract = await StakedToken.deploy("StakeHound stakedXZC", "stakedXZC", 8, ethers.BigNumber.from("100000000000"));
-  await stakedToken.deployed();
+  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  console.log("stakedXZC deployed to: ", stakedToken.address);
+  const downstreamAddress  = "0xcc0909b762295157c93c90a8d20e4dc629b40937";
+
+  let ABI = ["function sync()"];
+  let iface = new ethers.utils.Interface(ABI);
+  const data = iface.encodeFunctionData("sync", []);
+
+  console.log(`Adding function call to downstream`);
+  await stakedToken.addTransaction(downstreamAddress, data);
+
+  console.log(`Added function call to downstream, total downstream transactions: ${await stakedToken.transactionsSize()}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

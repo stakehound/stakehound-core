@@ -4,6 +4,7 @@
 // Runtime Environment's members available in the global scope.
 import { ethers } from "@nomiclabs/buidler";
 import { Contract, ContractFactory } from "ethers";
+import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
   // Buidler always runs the compile task when running scripts through it.
@@ -11,21 +12,16 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
-  const [deployer] = await ethers.getSigners();
+  const gnosisSafe = '0x1c14600daeca8852BA559CC8EdB1C383B8825906';
+  const stakedTokenAddress = '0x1c14600daeca8852BA559CC8EdB1C383B8825906';
 
-  console.log(
-    "Deploying contracts with the account:",
-    await deployer.getAddress()
-  );
-
-  console.log("Account balance:", (await deployer.getBalance()).toString());
-
-  // We get the contract to deploy
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken: Contract = await StakedToken.deploy("StakeHound stakedXZC", "stakedXZC", 8, ethers.BigNumber.from("100000000000"));
-  await stakedToken.deployed();
+  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  console.log("stakedXZC deployed to: ", stakedToken.address);
+  console.log("Transferring ownership of stakedToken...");
+  await stakedToken.setSupplyController(gnosisSafe);
+  await stakedToken.transferOwnership(gnosisSafe);
+  console.log("Transferred ownership of stakedToken to:", gnosisSafe);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

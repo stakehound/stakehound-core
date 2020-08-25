@@ -4,6 +4,7 @@
 // Runtime Environment's members available in the global scope.
 import { ethers } from "@nomiclabs/buidler";
 import { Contract, ContractFactory } from "ethers";
+import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
   // Buidler always runs the compile task when running scripts through it.
@@ -11,21 +12,16 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
-  const [deployer] = await ethers.getSigners();
+  const stakedTokenAddress = '0xEc1b213A3577f8d74e1d3970b8643D50C33C7BdE';
+  const recipient = '0x880772af311d7F3Bb2cf10A789Fa1264815f14e8';
+  const amount = ethers.BigNumber.from(10000000000);
 
-  console.log(
-    "Deploying contracts with the account:",
-    await deployer.getAddress()
-  );
-
-  console.log("Account balance:", (await deployer.getBalance()).toString());
-
-  // We get the contract to deploy
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken: Contract = await StakedToken.deploy("StakeHound stakedXZC", "stakedXZC", 8, ethers.BigNumber.from("100000000000"));
-  await stakedToken.deployed();
+  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  console.log("stakedXZC deployed to: ", stakedToken.address);
+  console.log(`Minting ${amount.toString()} to ${recipient}`);
+  await stakedToken.mint(recipient, amount);
+  console.log(`Minted ${amount.toString()} to ${recipient}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
