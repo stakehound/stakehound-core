@@ -16,9 +16,8 @@ contract StakedToken is IERC20, Ownable {
 
     uint256 private constant MAX_UINT256 = ~uint256(0);
 
-    // See discussion here https://github.com/ethereum/EIPs/issues/1726#issuecomment-472352728
-    uint256 internal constant SHARE_MULTIPLIER = 2**128;
     // Defines the multiplier applied to shares to arrive at the underlying balance
+    uint256 private _maxSupply;
     uint256 private _sharesPerToken;
     uint256 private _totalSupply;
     uint256 private _totalShares;
@@ -57,6 +56,7 @@ contract StakedToken is IERC20, Ownable {
         string memory name_,
         string memory symbol_,
         uint8 decimals_,
+        uint256 maxSupply_,
         uint256 initialSupply_
     ) public Ownable() {
         _name = name_;
@@ -65,8 +65,12 @@ contract StakedToken is IERC20, Ownable {
 
         supplyController = msg.sender;
 
+        // Maximise precision by picking the largest possible sharesPerToken value
+        // It is crucial to pick a maxSupply value that will never be exceeded
+        _sharesPerToken = MAX_UINT256.div(maxSupply_);
+
+        _maxSupply = maxSupply_;
         _totalSupply = initialSupply_;
-        _sharesPerToken = SHARE_MULTIPLIER;
         _totalShares = initialSupply_.mul(_sharesPerToken);
         _shareBalances[msg.sender] = _totalShares;
 

@@ -22,7 +22,7 @@ async function main(): Promise<void> {
 
   // We get the contract to deploy
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken: Contract = await StakedToken.deploy("StakeHound stakedXZC", "stakedXZC", 8, ethers.BigNumber.from("100000000000"));
+  const stakedToken: Contract = await StakedToken.deploy("StakeHound stakedXZC", "stakedXZC", 8, ethers.BigNumber.from(10).pow(8 + 8 + 6), ethers.BigNumber.from("100000000000"));
   await stakedToken.deployed();
 
   console.log("stakedXZC deployed to: ", stakedToken.address);

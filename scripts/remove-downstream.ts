@@ -13,15 +13,13 @@ async function main(): Promise<void> {
   // await run("compile");
 
   const stakedTokenAddress = '0x30183D8025Aa735ea96341b1A17bB1a175AF3608';
-  const recipient = '0x880772af311d7F3Bb2cf10A789Fa1264815f14e8';
-  const amount = ethers.BigNumber.from(100000000000);
-
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  console.log(`Minting ${amount.toString()} to ${recipient}`);
-  await stakedToken.mint(recipient, amount);
-  console.log(`Minted ${amount.toString()} to ${recipient}`);
+  console.log(`Removing function call from downstream`);
+  await stakedToken.removeTransaction(0);
+
+  console.log(`Removed function call from downsteam, total downstream transactions: ${await stakedToken.transactionsSize()}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

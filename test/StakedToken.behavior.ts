@@ -2,11 +2,11 @@ import { Signer } from "@ethersproject/abstract-signer";
 import { expect } from "chai";
 import { ethers } from "@nomiclabs/buidler";
 import { StakedToken } from "../typechain/StakedToken";
-import { BigNumberish } from "ethers";
+import { BigNumberish, BigNumber } from "ethers";
 import { MockDownstream } from "../typechain/MockDownstream";
 
 export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultiplier: BigNumberish): void {
-  function toTokenAmount(amount: BigNumberish): BigNumberish {
+  function toTokenAmount(amount: BigNumberish): BigNumber {
     return ethers.BigNumber.from(amount).mul(decimalsMultiplier);
   }
 
@@ -138,38 +138,39 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       const stakedToken: StakedToken = this.stakedToken;
 
       // Set up other account
-      const mintAmount = toTokenAmount(2000);
+      const mintAmount = toTokenAmount(3000);
       const recipient = await _signers[1].getAddress();
       await stakedToken.mint(recipient, mintAmount);
+
+      const preRebaseSupply = this.initialSupply.add(mintAmount);
 
       const supplyIncrease = toTokenAmount(10);
       await expect(stakedToken.distributeTokens(supplyIncrease))
         .to.emit(stakedToken, "LogTokenDistribution")
-        .withArgs(toTokenAmount(3000), supplyIncrease, toTokenAmount(3010));
+        .withArgs(preRebaseSupply, supplyIncrease, preRebaseSupply.add(supplyIncrease));
 
-      expect(await stakedToken.balanceOf(await _signers[0].getAddress())).to.equal(100333333333);
-      expect(await stakedToken.balanceOf(recipient)).to.equal(200666666666);
-      expect(await stakedToken.totalSupply()).to.equal(toTokenAmount(3010));
+      expect(await stakedToken.balanceOf(await _signers[0].getAddress())).to.equal(this.initialSupply.mul(10025).div(10000));
+      expect(await stakedToken.balanceOf(recipient)).to.equal(mintAmount.mul(10025).div(10000));
+      expect(await stakedToken.totalSupply()).to.equal(preRebaseSupply.mul(10025).div(10000));
     });
 
-    it.skip("should maintain supply precision", async function () {
+    it("should maintain supply precision for 20 doublings", async function () {
       const stakedToken: StakedToken = this.stakedToken;
 
       let preRebaseSupply, postRebaseSupply;
-      const endSupply = ethers.BigNumber.from(2).pow(128).sub(1);
+      const doublings = 20;
 
-      do {
+      for(let i=0; i<doublings; i++) {
         preRebaseSupply = await stakedToken.totalSupply();
         await stakedToken.distributeTokens(1);
         postRebaseSupply = await stakedToken.totalSupply();
-        console.log(`Increased supply by 1 to ${postRebaseSupply}, actually increased by ${postRebaseSupply.sub(preRebaseSupply).toNumber()}`);
+        console.log(`Increased supply by 1 to ${postRebaseSupply}, actually increased by ${postRebaseSupply.sub(preRebaseSupply)}`);
 
-        // expect(postRebaseSupply.sub(preRebaseSupply).toNumber()).to.eq(1);
+        expect(postRebaseSupply.sub(preRebaseSupply).toNumber()).to.eq(1);
 
-        console.log(`Doubling supply`);
-
+        console.log(`Doubling supply ${i}`);
         await stakedToken.distributeTokens(postRebaseSupply);
-      } while ((await stakedToken.totalSupply()).lt(endSupply))
+      }
 
     });
 
