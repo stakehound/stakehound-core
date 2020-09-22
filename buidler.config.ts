@@ -11,6 +11,7 @@ import "./tasks/typechain";
 usePlugin("@nomiclabs/buidler-waffle");
 usePlugin("solidity-coverage");
 usePlugin('@openzeppelin/buidler-upgrades');
+usePlugin('buidler-contract-sizer');
 // usePlugin("buidler-gas-reporter");
 
 interface NetworkConfig {
@@ -88,7 +89,7 @@ const config: BuidlerConfig = {
   solc: {
     /* https://buidler.dev/buidler-evm/#solidity-optimizer-support */
     optimizer: {
-      enabled: false,
+      enabled: true,
       runs: 200,
     },
     version: "0.6.10",

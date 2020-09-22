@@ -29,15 +29,6 @@ setTimeout(async function () {
       this.maxSupply = ethers.BigNumber.from(10).pow(15 + decimals + 6);
       this.initialSupply = ethers.BigNumber.from(1000).mul(this.decimalsMultiplier);
 
-      // this.stakedToken = (await deployContract(admin, StakedTokenArtifact, [])) as StakedToken;
-      // await this.stakedToken.initialize(
-      //   this.name,
-      //   this.symbol,
-      //   this.decimals,
-      //   this.maxSupply,
-      //   this.initialSupply,
-      // );
-
       const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
       const stakedToken: Contract = await upgrades.deployProxy(StakedToken, [this.name, this.symbol, this.decimals, this.maxSupply, this.initialSupply]);
       await stakedToken.deployed();

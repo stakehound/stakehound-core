@@ -4,15 +4,23 @@ pragma solidity ^0.6.10;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "./DownstreamCaller.sol";
 
-contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
+contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgradeSafe  {
     using SafeMath for uint256;
 
+    /**
+     * @dev Emitted when supply controller is changed
+     */
     event LogSupplyControllerUpdated(address supplyController);
+    /**
+     * @dev Emitted when token distribution happens
+     */
     event LogTokenDistribution(uint256 oldTotalSupply, uint256 supplyChange, bool positive, uint256 newTotalSupply);
+
 
     address public supplyController;
 
@@ -20,6 +28,7 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
 
     // Defines the multiplier applied to shares to arrive at the underlying balance
     uint256 private _maxSupply;
+
     uint256 private _sharesPerToken;
     uint256 private _totalSupply;
     uint256 private _totalShares;
@@ -31,6 +40,12 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
     string private _name;
     string private _symbol;
     uint8 private _decimals;
+
+    mapping(address => bool) public isBlacklisted;
+    /**
+     * @dev Emitted when account blacklist status changes
+     */
+    event Blacklisted(address indexed account, bool isBlacklisted);
 
     DownstreamCaller public downstreamCaller;
 
@@ -53,12 +68,12 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
         uint256 initialSupply_
     ) public initializer {
         __Ownable_init();
+        __Pausable_init();
         supplyController = msg.sender;
 
         _name = name_;
         _symbol = symbol_;
         _decimals = decimals_;
-
 
         MAX_UINT256 = ~uint256(0);
 
@@ -201,11 +216,14 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
      * @param value The amount to be transferred.
      * @return True on success, false otherwise.
      */
-    function transfer(address to, uint256 value) external override validRecipient(to) returns (bool) {
+    function transfer(address to, uint256 value) external override validRecipient(to) whenNotPaused returns (bool) {
+        require(!isBlacklisted[msg.sender], "from blacklisted");
+        require(!isBlacklisted[to], "to blacklisted");
+
         uint256 shareValue = value.mul(_sharesPerToken);
         _shareBalances[msg.sender] = _shareBalances[msg.sender].sub(
             shareValue,
-            "ERC20: transfer amount exceed account balance"
+            "transfer amount exceed account balance"
         );
         _shareBalances[to] = _shareBalances[to].add(shareValue);
         emit Transfer(msg.sender, to, value);
@@ -232,14 +250,17 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
         address from,
         address to,
         uint256 value
-    ) external override validRecipient(to) returns (bool) {
+    ) external override validRecipient(to) whenNotPaused returns (bool) {
+        require(!isBlacklisted[from], "from blacklisted");
+        require(!isBlacklisted[to], "to blacklisted");
+
         _allowedTokens[from][msg.sender] = _allowedTokens[from][msg.sender].sub(
             value,
-            "ERC20: transfer amount exceeds allowance"
+            "transfer amount exceeds allowance"
         );
 
         uint256 shareValue = value.mul(_sharesPerToken);
-        _shareBalances[from] = _shareBalances[from].sub(shareValue, "ERC20: transfer amount exceeds account balance");
+        _shareBalances[from] = _shareBalances[from].sub(shareValue, "transfer amount exceeds account balance");
         _shareBalances[to] = _shareBalances[to].add(shareValue);
         emit Transfer(from, to, value);
 
@@ -258,6 +279,9 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
      * @param value The amount of tokens to be spent.
      */
     function approve(address spender, uint256 value) external override returns (bool) {
+        require(!isBlacklisted[msg.sender], "owner blacklisted");
+        require(!isBlacklisted[spender], "spender blacklisted");
+
         _allowedTokens[msg.sender][spender] = value;
         emit Approval(msg.sender, spender, value);
         return true;
@@ -271,6 +295,9 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
      * @param addedValue The amount of tokens to increase the allowance by.
      */
     function increaseAllowance(address spender, uint256 addedValue) external returns (bool) {
+        require(!isBlacklisted[msg.sender], "owner blacklisted");
+        require(!isBlacklisted[spender], "spender blacklisted");
+
         _allowedTokens[msg.sender][spender] = _allowedTokens[msg.sender][spender].add(addedValue);
         emit Approval(msg.sender, spender, _allowedTokens[msg.sender][spender]);
         return true;
@@ -283,6 +310,9 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
      * @param subtractedValue The amount of tokens to decrease the allowance by.
      */
     function decreaseAllowance(address spender, uint256 subtractedValue) external returns (bool) {
+        require(!isBlacklisted[msg.sender], "owner blacklisted");
+        require(!isBlacklisted[spender], "spender blacklisted");
+
         uint256 oldValue = _allowedTokens[msg.sender][spender];
         if (subtractedValue >= oldValue) {
             _allowedTokens[msg.sender][spender] = 0;
@@ -302,8 +332,8 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
      *
      * - `account` cannot be the zero address.
      */
-    function mint(address account, uint256 amount) external onlySupplyController {
-        require(account != address(0), "ERC20: mint to the zero address");
+    function mint(address account, uint256 amount) external onlySupplyController validRecipient(account) {
+        require(!isBlacklisted[account], "account blacklisted");
 
         _totalSupply = _totalSupply.add(amount);
         uint256 shareAmount = amount.mul(_sharesPerToken);
@@ -327,7 +357,7 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
         address account = msg.sender;
 
         uint256 shareAmount = amount.mul(_sharesPerToken);
-        _shareBalances[account] = _shareBalances[account].sub(shareAmount, "ERC20: burn amount exceeds balance");
+        _shareBalances[account] = _shareBalances[account].sub(shareAmount, "burn amount exceeds balance");
         _totalShares = _totalShares.sub(shareAmount);
         _totalSupply = _totalSupply.sub(amount);
         emit Transfer(account, address(0), amount);
@@ -380,5 +410,34 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
      */
     function transactionsSize() external view returns (uint256) {
         return downstreamCaller.transactionsSize();
+    }
+
+
+    /**
+     * @dev Triggers stopped state.
+     */
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @dev Returns to normal state.
+     */
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
+    /**
+     * @dev Set blacklisted status for the account.
+     * @param account address to set blacklist flag for
+     * @param _isBlacklisted blacklist flag value
+     *
+     * Requirements:
+     *
+     * - `msg.sender` should be owner.
+     */
+    function setBlacklisted(address account, bool _isBlacklisted) external onlyOwner {
+        isBlacklisted[account] = _isBlacklisted;
+        emit Blacklisted(account, _isBlacklisted);
     }
 }

@@ -277,8 +277,6 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
   });
 
   describe("Allowances", async function () {
-    // Transfer + rebase ?
-
     const owner = _signers[0];
     const user = _signers[1];
 
@@ -405,6 +403,241 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       const data = iface.encodeFunctionData("updateOneArg", [12345]);
 
       await expect(stakedTokenAsUser.addTransaction(mockDownstream.address, data)).to.be.reverted;
+    });
+  });
+
+
+  describe("Pausable", async function () {
+    it("should fail token transfers when paused", async function () {
+      const stakedToken: StakedToken = this.stakedToken;
+      const recipient = await _signers[1].getAddress();
+
+      await stakedToken.pause()
+
+      const transferAmount = toTokenAmount(10);
+      await expect(stakedToken.transfer(recipient, transferAmount)).to.be.reverted;
+    });
+
+    it("should fail to transferFrom when paused", async function () {
+      const owner = _signers[0];
+      const user = _signers[1];
+
+      const stakedToken: StakedToken = this.stakedToken;
+      const stakedTokenAsUser = stakedToken.connect(user);
+      const allowance = toTokenAmount(1000);
+      const amount = toTokenAmount(100);
+
+      await stakedToken.pause()
+
+      await expect(stakedToken.approve(await user.getAddress(), allowance))
+        .to.emit(stakedToken, "Approval")
+        .withArgs(await owner.getAddress(), await user.getAddress(), allowance);
+
+      await expect(stakedTokenAsUser.transferFrom(await owner.getAddress(), await user.getAddress(), amount)).to.be
+        .reverted;
+    });
+
+    it("should unpause", async function () {
+      const stakedToken: StakedToken = this.stakedToken;
+      const recipient = await _signers[1].getAddress();
+
+      await stakedToken.pause();
+
+      const transferAmount = toTokenAmount(10);
+      await expect(stakedToken.transfer(recipient, transferAmount)).to.be.reverted;
+
+      // Unpause
+      await stakedToken.unpause();
+
+      await expect(stakedToken.transfer(recipient, transferAmount))
+        .to.emit(stakedToken, "Transfer")
+        .withArgs(await _signers[0].getAddress(), recipient, transferAmount);
+
+      expect(await stakedToken.balanceOf(await _signers[0].getAddress())).to.equal(
+        this.initialSupply.sub(transferAmount),
+      );
+      expect(await stakedToken.balanceOf(recipient)).to.equal(transferAmount);
+      expect(await stakedToken.totalSupply()).to.equal(this.initialSupply);
+    });
+
+    it("should not be callable by others", async function () {
+      const stakedTokenAsUser = this.stakedToken.connect(_signers[1]);
+
+      await expect(stakedTokenAsUser.pause()).to.be.reverted;
+      await expect(stakedTokenAsUser.unpause()).to.be.reverted;
+    });
+  });
+
+  describe("Blacklisting", async function () {
+    it("should fail token transfers when sender is blacklisted", async function () {
+      const stakedToken: StakedToken = this.stakedToken;
+      const recipient = await _signers[1].getAddress();
+
+      await stakedToken.setBlacklisted(await _signers[0].getAddress(), true);
+
+      const transferAmount = toTokenAmount(10);
+      await expect(stakedToken.transfer(recipient, transferAmount)).to.be.reverted;
+    });
+
+    it("should fail token transfers when recipient is blacklisted", async function () {
+      const stakedToken: StakedToken = this.stakedToken;
+      const recipient = await _signers[1].getAddress();
+
+      await stakedToken.setBlacklisted(recipient, true);
+
+      const transferAmount = toTokenAmount(10);
+      await expect(stakedToken.transfer(recipient, transferAmount)).to.be.reverted;
+    });
+
+    it("should fail to transferFrom when sender is blacklisted", async function () {
+      const owner = _signers[0];
+      const user = _signers[1];
+
+      const stakedToken: StakedToken = this.stakedToken;
+      const stakedTokenAsUser = stakedToken.connect(user);
+      const allowance = toTokenAmount(1000);
+      const amount = toTokenAmount(100);
+
+      await expect(stakedToken.approve(await user.getAddress(), allowance))
+        .to.emit(stakedToken, "Approval")
+        .withArgs(await owner.getAddress(), await user.getAddress(), allowance);
+
+      await stakedToken.setBlacklisted(await owner.getAddress(), true);
+
+      await expect(stakedTokenAsUser.transferFrom(await owner.getAddress(), await user.getAddress(), amount)).to.be
+        .reverted;
+    });
+
+    it("should fail to transferFrom when recipient is blacklisted", async function () {
+      const owner = _signers[0];
+      const user = _signers[1];
+
+      const stakedToken: StakedToken = this.stakedToken;
+      const stakedTokenAsUser = stakedToken.connect(user);
+      const allowance = toTokenAmount(1000);
+      const amount = toTokenAmount(100);
+
+      await expect(stakedToken.approve(await user.getAddress(), allowance))
+        .to.emit(stakedToken, "Approval")
+        .withArgs(await owner.getAddress(), await user.getAddress(), allowance);
+
+      await stakedToken.setBlacklisted(await user.getAddress(), true);
+
+      await expect(stakedTokenAsUser.transferFrom(await owner.getAddress(), await user.getAddress(), amount)).to.be
+        .reverted;
+    });
+
+    it("should fail to set allowance when sender is blacklisted", async function () {
+      const owner = _signers[0];
+      const user = _signers[1];
+
+      const stakedToken: StakedToken = this.stakedToken;
+      const stakedTokenAsUser = stakedToken.connect(user);
+      const allowance = toTokenAmount(1000);
+      const amount = toTokenAmount(100);
+
+      await stakedToken.setBlacklisted(await owner.getAddress(), true);
+
+      await expect(stakedToken.approve(await user.getAddress(), allowance)).to.be.reverted;
+    });
+
+    it("should fail to increase allowance when sender is blacklisted", async function () {
+      const owner = _signers[0];
+      const user = _signers[1];
+
+      const stakedToken: StakedToken = this.stakedToken;
+      const stakedTokenAsUser = stakedToken.connect(user);
+      const allowance = toTokenAmount(1000);
+      const amount = toTokenAmount(100);
+
+      await stakedToken.setBlacklisted(await owner.getAddress(), true);
+
+      await expect(stakedToken.increaseAllowance(await user.getAddress(), allowance)).to.be.reverted;
+    });
+
+    it("should fail to decrease allowance when sender is blacklisted", async function () {
+      const owner = _signers[0];
+      const user = _signers[1];
+
+      const stakedToken: StakedToken = this.stakedToken;
+      const stakedTokenAsUser = stakedToken.connect(user);
+      const allowance = toTokenAmount(1000);
+      const amount = toTokenAmount(100);
+
+      await stakedToken.setBlacklisted(await owner.getAddress(), true);
+
+      await expect(stakedToken.decreaseAllowance(await user.getAddress(), allowance)).to.be.reverted;
+    });
+
+    it("should fail to set allowance when spender is blacklisted", async function () {
+      const owner = _signers[0];
+      const user = _signers[1];
+
+      const stakedToken: StakedToken = this.stakedToken;
+      const stakedTokenAsUser = stakedToken.connect(user);
+      const allowance = toTokenAmount(1000);
+      const amount = toTokenAmount(100);
+
+      await stakedToken.setBlacklisted(await user.getAddress(), true);
+
+      await expect(stakedToken.approve(await user.getAddress(), allowance)).to.be.reverted;
+    });
+
+    it("should fail to increase allowance when spender is blacklisted", async function () {
+      const owner = _signers[0];
+      const user = _signers[1];
+
+      const stakedToken: StakedToken = this.stakedToken;
+      const stakedTokenAsUser = stakedToken.connect(user);
+      const allowance = toTokenAmount(1000);
+      const amount = toTokenAmount(100);
+
+      await stakedToken.setBlacklisted(await user.getAddress(), true);
+
+      await expect(stakedToken.increaseAllowance(await user.getAddress(), allowance)).to.be.reverted;
+    });
+
+    it("should fail to decrease allowance when spender is blacklisted", async function () {
+      const owner = _signers[0];
+      const user = _signers[1];
+
+      const stakedToken: StakedToken = this.stakedToken;
+      const stakedTokenAsUser = stakedToken.connect(user);
+      const allowance = toTokenAmount(1000);
+      const amount = toTokenAmount(100);
+
+      await stakedToken.setBlacklisted(await user.getAddress(), true);
+
+      await expect(stakedToken.decreaseAllowance(await user.getAddress(), allowance)).to.be.reverted;
+    });
+
+    it("should disable blacklist", async function () {
+      const stakedToken: StakedToken = this.stakedToken;
+      const recipient = await _signers[1].getAddress();
+
+      await stakedToken.setBlacklisted(recipient, true);
+
+      const transferAmount = toTokenAmount(10);
+      await expect(stakedToken.transfer(recipient, transferAmount)).to.be.reverted;
+
+      // Disable blacklist
+      await stakedToken.setBlacklisted(recipient, false);
+
+      await expect(stakedToken.transfer(recipient, transferAmount))
+        .to.emit(stakedToken, "Transfer")
+        .withArgs(await _signers[0].getAddress(), recipient, transferAmount);
+
+      expect(await stakedToken.balanceOf(await _signers[0].getAddress())).to.equal(
+        this.initialSupply.sub(transferAmount),
+      );
+      expect(await stakedToken.balanceOf(recipient)).to.equal(transferAmount);
+      expect(await stakedToken.totalSupply()).to.equal(this.initialSupply);
+    });
+
+    it("should not be callable by others", async function () {
+      const stakedTokenAsUser = this.stakedToken.connect(_signers[1]);
+
+      await expect(stakedTokenAsUser.setBlacklisted(await _signers[1].getAddress(), true)).to.be.reverted;
     });
   });
 
