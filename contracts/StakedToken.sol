@@ -117,11 +117,27 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
     }
 
     /**
+     * Set the name of the token
+     * @param name_ the new name of the token.
+     */
+    function setName(string calldata name_) external onlyOwner {
+        _name = name_;
+    }
+
+    /**
      * @dev Returns the symbol of the token, usually a shorter version of the
      * name.
      */
     function symbol() external view returns (string memory) {
         return _symbol;
+    }
+
+    /**
+     * Set the symbol of the token
+     * @param symbol_ the new symbol of the token.
+     */
+    function setSymbol(string calldata symbol_) external onlyOwner {
+        _symbol = symbol_;
     }
 
     /**

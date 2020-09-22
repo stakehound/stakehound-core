@@ -91,6 +91,41 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
     });
   });
 
+
+  describe("setName", async function () {
+    it("should update name", async function () {
+      const stakedToken: StakedToken = this.stakedToken;
+      const name = "newName";
+
+      await stakedToken.setName(name);
+
+      expect(await stakedToken.name()).to.equal(name);
+    });
+
+    it("should not be callable by others", async function () {
+      const userAddress = await _signers[1].getAddress();
+      const stakedTokenAsUser = this.stakedToken.connect(_signers[1]);
+      await expect(stakedTokenAsUser.setName("anything")).to.be.reverted;
+    });
+  });
+
+  describe("setSymbol", async function () {
+    it("should update symbol", async function () {
+      const stakedToken: StakedToken = this.stakedToken;
+      const symbol = "newSymbol";
+
+      await stakedToken.setSymbol(symbol);
+
+      expect(await stakedToken.symbol()).to.equal(symbol);
+    });
+
+    it("should not be callable by others", async function () {
+      const userAddress = await _signers[1].getAddress();
+      const stakedTokenAsUser = this.stakedToken.connect(_signers[1]);
+      await expect(stakedTokenAsUser.setSymbol("anything")).to.be.reverted;
+    });
+  });
+
   describe("Transfers", async function () {
     it("should transfer tokens", async function () {
       const stakedToken: StakedToken = this.stakedToken;
