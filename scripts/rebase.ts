@@ -14,12 +14,13 @@ async function main(): Promise<void> {
 
   const stakedTokenAddress = '0x30183D8025Aa735ea96341b1A17bB1a175AF3608';
   const amount = ethers.BigNumber.from(67398000000);
+  const positive = true;
 
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
   console.log(`Issuing ${amount.toString()} as rewards`);
-  await stakedToken.distributeTokens(amount);
+  await stakedToken.distributeTokens(amount, positive);
   console.log(`Issued ${amount.toString()} as rewards, new total supply: ${await stakedToken.totalSupply()}`);
 }
 

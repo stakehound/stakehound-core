@@ -12,7 +12,7 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
     using SafeMath for uint256;
 
     event LogSupplyControllerUpdated(address supplyController);
-    event LogTokenDistribution(uint256 oldTotalSupply, uint256 supplyIncrease, uint256 newTotalSupply);
+    event LogTokenDistribution(uint256 oldTotalSupply, uint256 supplyChange, bool positive, uint256 newTotalSupply);
 
     address public supplyController;
 
@@ -92,14 +92,22 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
      * @param supplyChange_ Increase of supply in token units
      * @return The updated total supply
      */
-    function distributeTokens(uint256 supplyChange_) external onlySupplyController returns (uint256) {
-        uint256 newTotalSupply = _totalSupply.add(supplyChange_);
+    function distributeTokens(uint256 supplyChange_, bool positive) external onlySupplyController returns (uint256) {
+        uint256 newTotalSupply;
+        if (positive) {
+            newTotalSupply = _totalSupply.add(supplyChange_);
+        } else {
+            newTotalSupply = _totalSupply.sub(supplyChange_);
+        }
+
+        require(newTotalSupply > 0, "rebase cannot make supply 0");
+
         _sharesPerToken = _totalShares.div(newTotalSupply);
 
         // Set correct total supply in case of mismatch caused by integer division
         newTotalSupply = _totalShares.div(_sharesPerToken);
 
-        emit LogTokenDistribution(_totalSupply, supplyChange_, newTotalSupply);
+        emit LogTokenDistribution(_totalSupply, supplyChange_, positive, newTotalSupply);
 
         _totalSupply = newTotalSupply;
 

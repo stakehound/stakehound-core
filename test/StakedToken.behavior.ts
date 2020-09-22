@@ -79,9 +79,9 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
 
       const stakedTokenAsUser = stakedToken.connect(_signers[1]);
       const supplyIncrease = toTokenAmount(10);
-      await expect(stakedTokenAsUser.distributeTokens(supplyIncrease))
+      await expect(stakedTokenAsUser.distributeTokens(supplyIncrease, true))
         .to.emit(stakedTokenAsUser, "LogTokenDistribution")
-        .withArgs(this.initialSupply, supplyIncrease, this.initialSupply.add(supplyIncrease));
+        .withArgs(this.initialSupply, supplyIncrease, true, this.initialSupply.add(supplyIncrease));
     });
 
     it("should not be callable by others", async function () {
@@ -219,13 +219,34 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       const preRebaseSupply = this.initialSupply.add(mintAmount);
 
       const supplyIncrease = toTokenAmount(10);
-      await expect(stakedToken.distributeTokens(supplyIncrease))
+      await expect(stakedToken.distributeTokens(supplyIncrease, true))
         .to.emit(stakedToken, "LogTokenDistribution")
-        .withArgs(preRebaseSupply, supplyIncrease, preRebaseSupply.add(supplyIncrease));
+        .withArgs(preRebaseSupply, supplyIncrease, true, preRebaseSupply.add(supplyIncrease));
 
       expect(await stakedToken.balanceOf(await _signers[0].getAddress())).to.equal(this.initialSupply.mul(10025).div(10000));
       expect(await stakedToken.balanceOf(recipient)).to.equal(mintAmount.mul(10025).div(10000));
       expect(await stakedToken.totalSupply()).to.equal(preRebaseSupply.mul(10025).div(10000));
+    });
+
+
+    it("should contract the supply", async function () {
+      const stakedToken: StakedToken = this.stakedToken;
+
+      // Set up other account
+      const mintAmount = toTokenAmount(3000);
+      const recipient = await _signers[1].getAddress();
+      await stakedToken.mint(recipient, mintAmount);
+
+      const preRebaseSupply = this.initialSupply.add(mintAmount);
+
+      const supplyDecrease = toTokenAmount(10);
+      await expect(stakedToken.distributeTokens(supplyDecrease, false))
+        .to.emit(stakedToken, "LogTokenDistribution")
+        .withArgs(preRebaseSupply, supplyDecrease, false, preRebaseSupply.sub(supplyDecrease));
+
+      expect(await stakedToken.balanceOf(await _signers[0].getAddress())).to.equal(this.initialSupply.mul(9975).div(10000));
+      expect(await stakedToken.balanceOf(recipient)).to.equal(mintAmount.mul(9975).div(10000));
+      expect(await stakedToken.totalSupply()).to.equal(preRebaseSupply.mul(9975).div(10000));
     });
 
     it("should maintain supply precision for 20 doublings", async function () {
@@ -236,14 +257,14 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
 
       for(let i=0; i<doublings; i++) {
         preRebaseSupply = await stakedToken.totalSupply();
-        await stakedToken.distributeTokens(1);
+        await stakedToken.distributeTokens(1, true);
         postRebaseSupply = await stakedToken.totalSupply();
         console.log(`Increased supply by 1 to ${postRebaseSupply}, actually increased by ${postRebaseSupply.sub(preRebaseSupply)}`);
 
         expect(postRebaseSupply.sub(preRebaseSupply).toNumber()).to.eq(1);
 
         console.log(`Doubling supply ${i}`);
-        await stakedToken.distributeTokens(postRebaseSupply);
+        await stakedToken.distributeTokens(postRebaseSupply, true);
       }
 
     });
@@ -307,7 +328,7 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       await stakedToken.addTransaction(mockDownstream.address, data);
       expect(await stakedToken.transactionsSize()).to.equal(1);
 
-      await expect(stakedToken.distributeTokens(123))
+      await expect(stakedToken.distributeTokens(123, true))
         .to.emit(mockDownstream, "FunctionCalled")
         .withArgs("MockDownstream", "updateOneArg", await stakedToken.downstreamCallerAddress());
     });
@@ -326,7 +347,7 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       await stakedToken.removeTransaction(0);
       expect(await stakedToken.transactionsSize()).to.equal(0);
 
-      await expect(stakedToken.distributeTokens(123))
+      await expect(stakedToken.distributeTokens(123, true))
         .to.not.emit(mockDownstream, "FunctionCalled");
     });
 
@@ -345,7 +366,7 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       await stakedToken.setTransactionEnabled(0, false);
       expect(await stakedToken.transactionsSize()).to.equal(1);
 
-      await expect(stakedToken.distributeTokens(123))
+      await expect(stakedToken.distributeTokens(123, true))
         .to.not.emit(mockDownstream, "FunctionCalled");
     });
 
@@ -369,7 +390,7 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       await stakedToken.addTransaction(mockDownstream.address, data);
       expect(await stakedToken.transactionsSize()).to.equal(1);
 
-      await expect(stakedToken.distributeTokens(123))
+      await expect(stakedToken.distributeTokens(123, true))
         .to.emit(mockDownstream, "FunctionCalled")
         .withArgs("MockDownstream", "updateOneArg", await stakedToken.downstreamCallerAddress());
 
