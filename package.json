@@ -1,13 +1,13 @@
 {
-  "name": "@paulrberg/solidity-template",
-  "description": "To be used when building a new solidity project from scratch",
+  "name": "stakehound-core",
+  "description": "StakeHound stakedToken with dynamic reward distribution",
   "version": "1.0.0",
   "author": {
-    "name": "Paul Razvan Berg",
-    "url": "https://paulrberg.com"
+    "name": "StakeHound",
+    "url": "https://stakehound.com"
   },
   "bugs": {
-    "url": "https://github.com/paulrberg/solidity-template/issues"
+    "url": "https://github.com/stakehound/stakehound-core/issues"
   },
   "devDependencies": {
     "@commitlint/cli": "^9.0.1",
@@ -56,7 +56,6 @@
   "files": [
     "/contracts"
   ],
-  "homepage": "https://github.com/paulrberg/solidity-template#readme",
   "keywords": [
     "blockchain",
     "ethereum",
@@ -69,7 +68,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/paulrberg/solidity-template"
+    "url": "https://github.com/stakehound/stakehound-core"
   },
   "scripts": {
     "build": "yarn run compile && yarn run typechain",
