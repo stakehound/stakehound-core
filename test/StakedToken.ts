@@ -3,7 +3,6 @@ import { Signer } from "@ethersproject/abstract-signer";
 import { deployContract, solidity } from "ethereum-waffle";
 import { ethers, upgrades } from "@nomiclabs/buidler";
 
-import StakedTokenArtifact from "../artifacts/StakedToken.json";
 import MockDownstreamArtifact from "../artifacts/MockDownstream.json";
 
 import { StakedToken } from "../typechain/StakedToken";
@@ -33,7 +32,6 @@ setTimeout(async function () {
       const stakedToken: Contract = await upgrades.deployProxy(StakedToken, [this.name, this.symbol, this.decimals, this.maxSupply, this.initialSupply]);
       await stakedToken.deployed();
       this.stakedToken = stakedToken as StakedToken;
-
 
       this.mockDownstream = (await deployContract(admin, MockDownstreamArtifact, [])) as MockDownstream;
     });

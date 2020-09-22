@@ -55,6 +55,7 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       // Do the upgrade
       const upgraded = await upgrades.upgradeProxy(instance.address, StakedTokenV2);
 
+      // Check values
       const name = await upgraded.name();
       expect(name).to.equal(this.name);
       expect(await upgraded.v2()).to.equal("hi");
@@ -62,7 +63,6 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       expect(await upgraded.transactionsSize()).to.equal(1);
       await upgraded.addTransaction(mockDownstream.address, data);
       expect(await upgraded.transactionsSize()).to.equal(2);
-
     });
   });
 
@@ -120,7 +120,6 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
     });
 
     it("should not be callable by others", async function () {
-      const userAddress = await _signers[1].getAddress();
       const stakedTokenAsUser = this.stakedToken.connect(_signers[1]);
       await expect(stakedTokenAsUser.setSymbol("anything")).to.be.reverted;
     });
@@ -193,10 +192,7 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
 
     it("should fail to burn more than in account", async function () {
       const stakedToken: StakedToken = this.stakedToken;
-
       const amount = this.initialSupply.add(1);
-      const admin = await _signers[0].getAddress();
-
       await expect(stakedToken.burn(amount)).to.be.reverted;
     });
 
@@ -532,9 +528,7 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       const user = _signers[1];
 
       const stakedToken: StakedToken = this.stakedToken;
-      const stakedTokenAsUser = stakedToken.connect(user);
       const allowance = toTokenAmount(1000);
-      const amount = toTokenAmount(100);
 
       await stakedToken.setBlacklisted(await owner.getAddress(), true);
 
@@ -546,9 +540,7 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       const user = _signers[1];
 
       const stakedToken: StakedToken = this.stakedToken;
-      const stakedTokenAsUser = stakedToken.connect(user);
       const allowance = toTokenAmount(1000);
-      const amount = toTokenAmount(100);
 
       await stakedToken.setBlacklisted(await owner.getAddress(), true);
 
@@ -560,9 +552,7 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       const user = _signers[1];
 
       const stakedToken: StakedToken = this.stakedToken;
-      const stakedTokenAsUser = stakedToken.connect(user);
       const allowance = toTokenAmount(1000);
-      const amount = toTokenAmount(100);
 
       await stakedToken.setBlacklisted(await owner.getAddress(), true);
 
@@ -570,13 +560,10 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
     });
 
     it("should fail to set allowance when spender is blacklisted", async function () {
-      const owner = _signers[0];
       const user = _signers[1];
 
       const stakedToken: StakedToken = this.stakedToken;
-      const stakedTokenAsUser = stakedToken.connect(user);
       const allowance = toTokenAmount(1000);
-      const amount = toTokenAmount(100);
 
       await stakedToken.setBlacklisted(await user.getAddress(), true);
 
@@ -584,13 +571,10 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
     });
 
     it("should fail to increase allowance when spender is blacklisted", async function () {
-      const owner = _signers[0];
       const user = _signers[1];
 
       const stakedToken: StakedToken = this.stakedToken;
-      const stakedTokenAsUser = stakedToken.connect(user);
       const allowance = toTokenAmount(1000);
-      const amount = toTokenAmount(100);
 
       await stakedToken.setBlacklisted(await user.getAddress(), true);
 
@@ -598,13 +582,10 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
     });
 
     it("should fail to decrease allowance when spender is blacklisted", async function () {
-      const owner = _signers[0];
       const user = _signers[1];
 
       const stakedToken: StakedToken = this.stakedToken;
-      const stakedTokenAsUser = stakedToken.connect(user);
       const allowance = toTokenAmount(1000);
-      const amount = toTokenAmount(100);
 
       await stakedToken.setBlacklisted(await user.getAddress(), true);
 
