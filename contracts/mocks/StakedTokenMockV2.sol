@@ -6,9 +6,9 @@ import "@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
-import "./DownstreamCaller.sol";
+import "../DownstreamCaller.sol";
 
-contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
+contract StakedTokenMockV2 is IERC20, Initializable, OwnableUpgradeSafe {
     using SafeMath for uint256;
 
     event LogSupplyControllerUpdated(address supplyController);
@@ -33,6 +33,8 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
     uint8 private _decimals;
 
     DownstreamCaller public downstreamCaller;
+
+    uint8 private fakeV2Var;
 
     modifier onlySupplyController() {
         require(msg.sender == supplyController);
@@ -356,5 +358,9 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe {
      */
     function transactionsSize() external view returns (uint256) {
         return downstreamCaller.transactionsSize();
+    }
+
+    function v2() external pure returns (string memory) {
+        return "hi";
     }
 }

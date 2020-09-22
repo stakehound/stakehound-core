@@ -2,7 +2,7 @@
 // but useful for running the script in a standalone fashion through `node <script>`.
 // When running the script with `buidler run <script>` you'll find the Buidler
 // Runtime Environment's members available in the global scope.
-import { ethers } from "@nomiclabs/buidler";
+import { ethers, upgrades } from "@nomiclabs/buidler";
 import { Contract, ContractFactory } from "ethers";
 
 async function main(): Promise<void> {
@@ -20,12 +20,18 @@ async function main(): Promise<void> {
 
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
+  const tokenName = "StakeHound stakedXZC";
+  const tokenSymbol = "stakedXZC";
+  const tokenDecimals = 8;
+  const tokenMaxSupply = ethers.BigNumber.from(10).pow(8 + 8 + 6);
+  const tokenInitialSupply = ethers.BigNumber.from("100000000000");
+
   // We get the contract to deploy
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken: Contract = await StakedToken.deploy("StakeHound stakedXZC", "stakedXZC", 8, ethers.BigNumber.from(10).pow(8 + 8 + 6), ethers.BigNumber.from("100000000000"));
+  const stakedToken: Contract = await upgrades.deployProxy(StakedToken, [tokenName, tokenSymbol, tokenDecimals, tokenMaxSupply, tokenInitialSupply]);
   await stakedToken.deployed();
 
-  console.log("stakedXZC deployed to: ", stakedToken.address);
+  console.log(`${tokenName} deployed to: `, stakedToken.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

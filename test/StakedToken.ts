@@ -1,7 +1,7 @@
 import chai from "chai";
 import { Signer } from "@ethersproject/abstract-signer";
 import { deployContract, solidity } from "ethereum-waffle";
-import { ethers } from "@nomiclabs/buidler";
+import { ethers, upgrades } from "@nomiclabs/buidler";
 
 import StakedTokenArtifact from "../artifacts/StakedToken.json";
 import MockDownstreamArtifact from "../artifacts/MockDownstream.json";
@@ -9,6 +9,7 @@ import MockDownstreamArtifact from "../artifacts/MockDownstream.json";
 import { StakedToken } from "../typechain/StakedToken";
 import { MockDownstream } from "../typechain/MockDownstream";
 import { shouldBehaveLikeStakedToken } from "./StakedToken.behavior";
+import { Contract, ContractFactory } from "ethers";
 
 chai.use(solidity);
 
@@ -28,13 +29,21 @@ setTimeout(async function () {
       this.maxSupply = ethers.BigNumber.from(10).pow(15 + decimals + 6);
       this.initialSupply = ethers.BigNumber.from(1000).mul(this.decimalsMultiplier);
 
-      this.stakedToken = (await deployContract(admin, StakedTokenArtifact, [
-        this.name,
-        this.symbol,
-        this.decimals,
-        this.maxSupply,
-        this.initialSupply,
-      ])) as StakedToken;
+      // this.stakedToken = (await deployContract(admin, StakedTokenArtifact, [])) as StakedToken;
+      // await this.stakedToken.initialize(
+      //   this.name,
+      //   this.symbol,
+      //   this.decimals,
+      //   this.maxSupply,
+      //   this.initialSupply,
+      // );
+
+      const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
+      const stakedToken: Contract = await upgrades.deployProxy(StakedToken, [this.name, this.symbol, this.decimals, this.maxSupply, this.initialSupply]);
+      await stakedToken.deployed();
+      this.stakedToken = stakedToken as StakedToken;
+
+
       this.mockDownstream = (await deployContract(admin, MockDownstreamArtifact, [])) as MockDownstream;
     });
 

@@ -1,9 +1,12 @@
 import { Signer } from "@ethersproject/abstract-signer";
 import { expect } from "chai";
-import { ethers } from "@nomiclabs/buidler";
+import { ethers, upgrades } from "@nomiclabs/buidler";
 import { StakedToken } from "../typechain/StakedToken";
 import { BigNumberish, BigNumber } from "ethers";
 import { MockDownstream } from "../typechain/MockDownstream";
+import { DownstreamCaller } from "../typechain/DownstreamCaller";
+import DownstreamCallerArtifact from "../artifacts/DownstreamCaller.json";
+import { deployContract } from "ethereum-waffle";
 
 export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultiplier: BigNumberish): void {
   function toTokenAmount(amount: BigNumberish): BigNumber {
@@ -28,6 +31,42 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       await expect(_signers[1].sendTransaction({ to: this.stakedToken.address, value: 1 })).to.be.reverted;
     });
   });
+
+
+  describe("Upgrades", async function () {
+    it("should be upgradeable", async function () {
+      const StakedToken = await ethers.getContractFactory("StakedToken");
+      const StakedTokenV2 = await ethers.getContractFactory("StakedTokenMockV2");
+      const mockDownstream: MockDownstream = this.mockDownstream;
+
+      const instance = await upgrades.deployProxy(StakedToken, [this.name, this.symbol, this.decimals, this.maxSupply, this.initialSupply]);
+
+      //Check balance is preserved
+      const recipient = await _signers[1].getAddress();
+      const transferAmount = toTokenAmount(10);
+      await instance.transfer(recipient, transferAmount);
+
+      // Check downstream caller still works after upgrade
+      let ABI = ["function updateOneArg(uint256 u)"];
+      let iface = new ethers.utils.Interface(ABI);
+      const data = iface.encodeFunctionData("updateOneArg", [12345]);
+      await instance.addTransaction(mockDownstream.address, data);
+
+      // Do the upgrade
+      const upgraded = await upgrades.upgradeProxy(instance.address, StakedTokenV2);
+
+      const name = await upgraded.name();
+      expect(name).to.equal(this.name);
+      expect(await upgraded.v2()).to.equal("hi");
+      expect(await upgraded.balanceOf(recipient)).to.equal(transferAmount);
+      expect(await upgraded.transactionsSize()).to.equal(1);
+      await upgraded.addTransaction(mockDownstream.address, data);
+      expect(await upgraded.transactionsSize()).to.equal(2);
+
+    });
+  });
+
+
 
   describe("setSupplyController", async function () {
     it("should update supply controller", async function () {
@@ -235,7 +274,7 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
 
       await expect(stakedToken.distributeTokens(123))
         .to.emit(mockDownstream, "FunctionCalled")
-        .withArgs("MockDownstream", "updateOneArg", stakedToken.address);
+        .withArgs("MockDownstream", "updateOneArg", await stakedToken.downstreamCallerAddress());
     });
 
     it("should remove a downstream transaction", async function () {
@@ -273,6 +312,32 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
 
       await expect(stakedToken.distributeTokens(123))
         .to.not.emit(mockDownstream, "FunctionCalled");
+    });
+
+    it("should change the downstream caller contract", async function () {
+      const stakedToken: StakedToken = this.stakedToken;
+      const mockDownstream: MockDownstream = this.mockDownstream;
+
+      let ABI = ["function updateOneArg(uint256 u)"];
+      let iface = new ethers.utils.Interface(ABI);
+      const data = iface.encodeFunctionData("updateOneArg", [12345]);
+
+      await stakedToken.addTransaction(mockDownstream.address, data);
+      expect(await stakedToken.transactionsSize()).to.equal(1);
+
+      const downstreamCaller = (await deployContract(_signers[0], DownstreamCallerArtifact, [])) as DownstreamCaller;
+      await downstreamCaller.transferOwnership(stakedToken.address);
+
+      await stakedToken.setDownstreamCaller(downstreamCaller.address);
+
+      expect(await stakedToken.transactionsSize()).to.equal(0);
+      await stakedToken.addTransaction(mockDownstream.address, data);
+      expect(await stakedToken.transactionsSize()).to.equal(1);
+
+      await expect(stakedToken.distributeTokens(123))
+        .to.emit(mockDownstream, "FunctionCalled")
+        .withArgs("MockDownstream", "updateOneArg", await stakedToken.downstreamCallerAddress());
+
     });
 
     it("should not be callable by others", async function () {

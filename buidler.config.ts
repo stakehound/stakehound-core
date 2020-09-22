@@ -10,6 +10,7 @@ import "./tasks/typechain";
 
 usePlugin("@nomiclabs/buidler-waffle");
 usePlugin("solidity-coverage");
+usePlugin('@openzeppelin/buidler-upgrades');
 // usePlugin("buidler-gas-reporter");
 
 interface NetworkConfig {

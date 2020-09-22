@@ -13,7 +13,7 @@ async function main(): Promise<void> {
   // await run("compile");
 
   const stakedTokenAddress = '0x30183D8025Aa735ea96341b1A17bB1a175AF3608';
-  const amount = ethers.BigNumber.from(10000000000);
+  const amount = ethers.BigNumber.from(67398000000);
 
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
