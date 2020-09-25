@@ -416,14 +416,14 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgra
     /**
      * @dev Triggers stopped state.
      */
-    function pause() external onlyOwner {
+    function pause() external onlySupplyController {
         _pause();
     }
 
     /**
      * @dev Returns to normal state.
      */
-    function unpause() external onlyOwner {
+    function unpause() external onlySupplyController {
         _unpause();
     }
 
@@ -436,7 +436,7 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgra
      *
      * - `msg.sender` should be owner.
      */
-    function setBlacklisted(address account, bool _isBlacklisted) external onlyOwner {
+    function setBlacklisted(address account, bool _isBlacklisted) external onlySupplyController {
         isBlacklisted[account] = _isBlacklisted;
         emit Blacklisted(account, _isBlacklisted);
     }
