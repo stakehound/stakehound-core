@@ -1,6 +1,6 @@
 // contracts/DownstreamCaller.sol
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.10;
+pragma solidity 0.6.10;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -20,7 +20,7 @@ contract DownstreamCaller is Ownable {
     /**
      * Call all downstream transactions
      */
-    function executeTransactions() external {
+    function executeTransactions() external onlyOwner {
         for (uint256 i = 0; i < transactions.length; i++) {
             Transaction storage t = transactions[i];
             if (t.enabled) {
@@ -38,9 +38,14 @@ contract DownstreamCaller is Ownable {
      * @notice Adds a transaction that gets called for a downstream receiver of token distributions
      * @param destination Address of contract destination
      * @param data Transaction data payload
+     * @return index of the newly added transaction
      */
-    function addTransaction(address destination, bytes memory data) external onlyOwner {
+    function addTransaction(address destination, bytes memory data) external onlyOwner returns(uint256) {
+        require(destination != address(0x0));
+        require(data.length != 0);
+        uint txIndex = transactions.length;
         transactions.push(Transaction({ enabled: true, destination: destination, data: data }));
+        return txIndex;
     }
 
     /**

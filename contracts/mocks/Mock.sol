@@ -1,6 +1,6 @@
 // contracts/StakedToken.sol
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.10;
+pragma solidity 0.6.10;
 
 contract Mock {
     event FunctionCalled(string instanceName, string functionName, address caller);

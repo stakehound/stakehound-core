@@ -1,6 +1,6 @@
 // contracts/StakedToken.sol
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.10;
+pragma solidity 0.6.10;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
@@ -20,6 +20,10 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgra
      * @dev Emitted when token distribution happens
      */
     event LogTokenDistribution(uint256 oldTotalSupply, uint256 supplyChange, bool positive, uint256 newTotalSupply);
+    /**
+     * @dev Emitted if total supply exceeds maximum expected supply
+     */
+    event WarningMaxExpectedSupplyExceeded(uint256 totalSupply, uint256 totalShares);
 
 
     address public supplyController;
@@ -27,7 +31,7 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgra
     uint256 private MAX_UINT256;
 
     // Defines the multiplier applied to shares to arrive at the underlying balance
-    uint256 private _maxSupply;
+    uint256 private _maxExpectedSupply;
 
     uint256 private _sharesPerToken;
     uint256 private _totalSupply;
@@ -60,11 +64,22 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgra
         _;
     }
 
+    /**
+     * Set the address that can mint, burn and rebase
+     *
+     * @param name_ Name of the token
+     * @param symbol_ Symbol of the token
+     * @param decimals_ Decimal places of the token - purely for display purposes
+     * @param maxExpectedSupply_ Maximum possilbe supply of the token.
+                                Value should be chosen such that it could never be realistically exceeded based on the underlying token.
+                                Not binding, can be exceeded in reality, with the risk of losing precision in a reward distribution event
+     * @param initialSupply_ Inital supply of the token, sent to the creator of the token
+     */
     function initialize(
         string memory name_,
         string memory symbol_,
         uint8 decimals_,
-        uint256 maxSupply_,
+        uint256 maxExpectedSupply_,
         uint256 initialSupply_
     ) public initializer {
         __Ownable_init();
@@ -79,9 +94,9 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgra
 
         // Maximise precision by picking the largest possible sharesPerToken value
         // It is crucial to pick a maxSupply value that will never be exceeded
-        _sharesPerToken = MAX_UINT256.div(maxSupply_);
+        _sharesPerToken = MAX_UINT256.div(maxExpectedSupply_);
 
-        _maxSupply = maxSupply_;
+        _maxExpectedSupply = maxExpectedSupply_;
         _totalSupply = initialSupply_;
         _totalShares = initialSupply_.mul(_sharesPerToken);
         _shareBalances[msg.sender] = _totalShares;
@@ -97,12 +112,13 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgra
      * @param supplyController_ Address of the new supply controller
      */
     function setSupplyController(address supplyController_) external onlyOwner {
+        require(supplyController_ != address(0x0), "invalid address");
         supplyController = supplyController_;
         emit LogSupplyControllerUpdated(supplyController);
     }
 
     /**
-     * Distribute a supply increase to all token holders proportionally
+     * Distribute a supply increase or decrease to all token holders proportionally
      *
      * @param supplyChange_ Increase of supply in token units
      * @return The updated total supply
@@ -125,6 +141,10 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgra
         emit LogTokenDistribution(_totalSupply, supplyChange_, positive, newTotalSupply);
 
         _totalSupply = newTotalSupply;
+
+        if (_totalSupply > _maxExpectedSupply) {
+            emit WarningMaxExpectedSupplyExceeded(_totalSupply, _totalShares);
+        }
 
         // Call downstream transactions
         downstreamCaller.executeTransactions();
@@ -281,6 +301,7 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgra
     function approve(address spender, uint256 value) external override returns (bool) {
         require(!isBlacklisted[msg.sender], "owner blacklisted");
         require(!isBlacklisted[spender], "spender blacklisted");
+        require(spender != address(0x0), "invalid address");
 
         _allowedTokens[msg.sender][spender] = value;
         emit Approval(msg.sender, spender, value);
@@ -297,6 +318,7 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgra
     function increaseAllowance(address spender, uint256 addedValue) external returns (bool) {
         require(!isBlacklisted[msg.sender], "owner blacklisted");
         require(!isBlacklisted[spender], "spender blacklisted");
+        require(spender != address(0x0), "invalid address");
 
         _allowedTokens[msg.sender][spender] = _allowedTokens[msg.sender][spender].add(addedValue);
         emit Approval(msg.sender, spender, _allowedTokens[msg.sender][spender]);
@@ -312,6 +334,7 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgra
     function decreaseAllowance(address spender, uint256 subtractedValue) external returns (bool) {
         require(!isBlacklisted[msg.sender], "owner blacklisted");
         require(!isBlacklisted[spender], "spender blacklisted");
+        require(spender != address(0x0), "invalid address");
 
         uint256 oldValue = _allowedTokens[msg.sender][spender];
         if (subtractedValue >= oldValue) {
@@ -334,33 +357,31 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgra
      */
     function mint(address account, uint256 amount) external onlySupplyController validRecipient(account) {
         require(!isBlacklisted[account], "account blacklisted");
+        require(account != address(0x0), "invalid address");
 
         _totalSupply = _totalSupply.add(amount);
         uint256 shareAmount = amount.mul(_sharesPerToken);
         _totalShares = _totalShares.add(shareAmount);
         _shareBalances[account] = _shareBalances[account].add(shareAmount);
         emit Transfer(address(0), account, amount);
+
+        if (_totalSupply > _maxExpectedSupply) {
+            emit WarningMaxExpectedSupplyExceeded(_totalSupply, _totalShares);
+        }
     }
 
     /**
-     * Destroys `amount` tokens from `account`, reducing the
+     * Destroys `amount` tokens from `supplyController` account, reducing the
      * total supply while keeping the tokens per shares ratio constant
      *
      * Emits a {Transfer} event with `to` set to the zero address.
-     *
-     * Requirements
-     *
-     * - `account` cannot be the zero address.
-     * - `account` must have at least `amount` tokens.
      */
     function burn(uint256 amount) external onlySupplyController {
-        address account = msg.sender;
-
         uint256 shareAmount = amount.mul(_sharesPerToken);
-        _shareBalances[account] = _shareBalances[account].sub(shareAmount, "burn amount exceeds balance");
+        _shareBalances[supplyController] = _shareBalances[supplyController].sub(shareAmount, "burn amount exceeds balance");
         _totalShares = _totalShares.sub(shareAmount);
         _totalSupply = _totalSupply.sub(amount);
-        emit Transfer(account, address(0), amount);
+        emit Transfer(supplyController, address(0), amount);
     }
 
 
@@ -384,9 +405,10 @@ contract StakedToken is IERC20, Initializable, OwnableUpgradeSafe, PausableUpgra
      * @notice Adds a transaction that gets called for a downstream receiver of token distributions
      * @param destination Address of contract destination
      * @param data Transaction data payload
+     * @return index of the newly added transaction
      */
-    function addTransaction(address destination, bytes memory data) external onlySupplyController {
-        downstreamCaller.addTransaction(destination, data);
+    function addTransaction(address destination, bytes memory data) external onlySupplyController returns(uint256) {
+        return downstreamCaller.addTransaction(destination, data);
     }
 
     /**
