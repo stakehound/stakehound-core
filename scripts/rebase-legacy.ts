@@ -12,16 +12,21 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
-  const newOwner = '0x1c14600daeca8852BA559CC8EdB1C383B8825906';
-  const stakedTokenAddress = '0x1c14600daeca8852BA559CC8EdB1C383B8825906';
+  // stakedXZC
+  const stakedTokenAddress = '0x30183D8025Aa735ea96341b1A17bB1a175AF3608';
+  const amount = ethers.BigNumber.from(121125346738000);
 
-  const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
+  // A Human-Readable ABI; any supported ABI format could be used
+  const abi = [
+    "function distributeTokens(uint256 amount)",
+  ];
+  const signer = (await ethers.getSigners())[0];
 
-  console.log("Transferring ownership of stakedToken...");
-  await stakedToken.transferOwnership(newOwner);
-  await stakedToken.transferProxyAdminOwnership(newOwner)
-  console.log("Transferred ownership of stakedToken to:", newOwner);
+  const stakedToken = new ethers.Contract(stakedTokenAddress, abi, signer);
+
+  console.log(`Issuing ${amount.toString()} as rewards`);
+  await stakedToken.distributeTokens(amount);
+  console.log(`Issued ${amount.toString()} as rewards`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

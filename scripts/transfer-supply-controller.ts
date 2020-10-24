@@ -2,8 +2,9 @@
 // but useful for running the script in a standalone fashion through `node <script>`.
 // When running the script with `buidler run <script>` you'll find the Buidler
 // Runtime Environment's members available in the global scope.
-import { ethers, upgrades } from "@nomiclabs/buidler";
+import { ethers } from "@nomiclabs/buidler";
 import { Contract, ContractFactory } from "ethers";
+import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
   // Buidler always runs the compile task when running scripts through it.
@@ -11,27 +12,15 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
-  const [deployer] = await ethers.getSigners();
+  const newSupplyController = '0x1c14600daeca8852BA559CC8EdB1C383B8825906';
+  const stakedTokenAddress = '0x1c14600daeca8852BA559CC8EdB1C383B8825906';
 
-  console.log(
-    "Deploying contracts with the account:",
-    await deployer.getAddress()
-  );
-
-  console.log("Account balance:", (await deployer.getBalance()).toString());
-
-  const tokenName = "StakeHound stakedETH";
-  const tokenSymbol = "stakedETH";
-  const tokenDecimals = 18;
-  const tokenMaxSupply = ethers.BigNumber.from(10).pow(9 + tokenDecimals + 6);
-  const tokenInitialSupply = ethers.BigNumber.from("0");
-
-  // We get the contract to deploy
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken: Contract = await upgrades.deployProxy(StakedToken, [tokenName, tokenSymbol, tokenDecimals, tokenMaxSupply, tokenInitialSupply]);
-  await stakedToken.deployed();
+  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  console.log(`${tokenName} deployed to: `, stakedToken.address);
+  console.log("Changing supply contro0ller of stakedToken...");
+  await stakedToken.setSupplyController(newSupplyController);
+  console.log("Changed supply controller of stakedToken to:", newSupplyController);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

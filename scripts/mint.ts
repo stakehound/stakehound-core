@@ -12,9 +12,16 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
+  // stakedXZC
   const stakedTokenAddress = '0x30183D8025Aa735ea96341b1A17bB1a175AF3608';
-  const recipient = '0x7ab6880C4d3B20E73fb81666605C23786C428097';
-  const amount = ethers.BigNumber.from(100000000000);
+  const amount = ethers.BigNumber.from(10000000000);
+  // stakedXEM
+  // const stakedTokenAddress = '0x0957C4D096dcb6DaF9C7B1A865b3ec9df0d12883';
+  // const amount = ethers.BigNumber.from(100000000);
+  // stakedDASH
+  // const stakedTokenAddress = '0x7E7A46FECeDAC72Eca55f762eD557c3756432489';
+  // const amount = ethers.BigNumber.from(10000000000);
+  const recipient = '0xAE6E74473d3F754d56fc9C1b0d2F870552e58422';
 
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;

@@ -12,11 +12,16 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
-  const stakedTokenAddress = '0x30183D8025Aa735ea96341b1A17bB1a175AF3608';
+  // stakedXZC
+  // const stakedTokenAddress = '0x30183D8025Aa735ea96341b1A17bB1a175AF3608';
+  // stakedXEM
+  // const stakedTokenAddress = '0x0957C4D096dcb6DaF9C7B1A865b3ec9df0d12883';
+  // stakedDASH
+  const stakedTokenAddress = '0x7E7A46FECeDAC72Eca55f762eD557c3756432489';
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  const downstreamAddress  = "0x0DB914f2356B092A5068cA3182BA571db580650D";
+  const downstreamAddress  = "0x501d59c2fFc84B8e5FB92019d8966E00CB6a16E2";
 
   let ABI = ["function sync()"];
   let iface = new ethers.utils.Interface(ABI);
