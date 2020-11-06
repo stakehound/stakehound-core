@@ -17,7 +17,7 @@
     "@nomiclabs/buidler": "1.4.0",
     "@nomiclabs/buidler-ethers": "^2.0.0",
     "@nomiclabs/buidler-waffle": "^2.0.0",
-    "@openzeppelin/buidler-upgrades": "^1.1.0",
+    "@openzeppelin/buidler-upgrades": "^1.2.1",
     "@openzeppelin/contracts": "^3.2.0",
     "@openzeppelin/contracts-ethereum-package": "^3.0.0",
     "@typechain/ethers-v5": "^1.0.0",
@@ -85,5 +85,10 @@
     "deploy": "buidler run scripts/deploy.ts",
     "script": "buidler run",
     "accounts": "buidler accounts"
+  },
+  "dependencies": {
+    "@gnosis.pm/safe-contracts": "^1.2.0",
+    "browser-env": "^3.3.0",
+    "contract-proxy-kit": "^2.2.0-alpha.1"
   }
 }

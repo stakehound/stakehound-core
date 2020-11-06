@@ -12,21 +12,19 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
+  const newSupplyController = '0x314f8e805B347af013CD952e0929CB573abbf4d1';
+  //Mainnet
+  // testedTest
+  // const stakedTokenAddress = '0x7DEfd41888692cDD14820266F70506990D7BD216';
   // stakedXZC
-  // const stakedTokenAddress = '0x30183D8025Aa735ea96341b1A17bB1a175AF3608';
-  // stakedXEM
-  const stakedTokenAddress = '0x0957C4D096dcb6DaF9C7B1A865b3ec9df0d12883';
-  // stakedDASH
-  // const stakedTokenAddress = '0x7E7A46FECeDAC72Eca55f762eD557c3756432489';
-  const amount = ethers.BigNumber.from(445084761000);
-  const positive = true;
+  const stakedTokenAddress = '0x160B1E5aaBFD70B2FC40Af815014925D71CEEd7E';
 
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  console.log(`Issuing ${amount.toString()} as rewards`);
-  await stakedToken.distributeTokens(amount, positive);
-  console.log(`Issued ${amount.toString()} as rewards, new total supply: ${await stakedToken.totalSupply()}`);
+  console.log("Changing supply controller of stakedToken...");
+  await stakedToken.setSupplyController(newSupplyController);
+  console.log("Changed supply controller of stakedToken to:", newSupplyController);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

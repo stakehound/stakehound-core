@@ -1,0 +1,178 @@
+{
+  "manifestVersion": "3.1",
+  "impls": {
+    "f761f400fd0759d3bdebd36a9a3447177f2b5c76aba480f0b78af94af04715b1": {
+      "address": "0xEc1b213A3577f8d74e1d3970b8643D50C33C7BdE",
+      "txHash": "0x8a6a4502622fa7903e1b5fa65e053cfdb3576170d382b8975ba373e90b9de80e",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:26"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:61"
+          },
+          {
+            "contract": "ContextUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-ethereum-package\\contracts\\GSN\\Context.sol:37"
+          },
+          {
+            "contract": "OwnableUpgradeSafe",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\Ownable.sol:18"
+          },
+          {
+            "contract": "OwnableUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\Ownable.sol:78"
+          },
+          {
+            "contract": "PausableUpgradeSafe",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-ethereum-package\\contracts\\utils\\Pausable.sol:26"
+          },
+          {
+            "contract": "PausableUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-ethereum-package\\contracts\\utils\\Pausable.sol:84"
+          },
+          {
+            "contract": "StakedToken",
+            "label": "supplyController",
+            "type": "t_address",
+            "src": "ontracts\\StakedToken.sol:29"
+          },
+          {
+            "contract": "StakedToken",
+            "label": "MAX_UINT256",
+            "type": "t_uint256",
+            "src": "ontracts\\StakedToken.sol:31"
+          },
+          {
+            "contract": "StakedToken",
+            "label": "_maxExpectedSupply",
+            "type": "t_uint256",
+            "src": "ontracts\\StakedToken.sol:34"
+          },
+          {
+            "contract": "StakedToken",
+            "label": "_sharesPerToken",
+            "type": "t_uint256",
+            "src": "ontracts\\StakedToken.sol:36"
+          },
+          {
+            "contract": "StakedToken",
+            "label": "_totalSupply",
+            "type": "t_uint256",
+            "src": "ontracts\\StakedToken.sol:37"
+          },
+          {
+            "contract": "StakedToken",
+            "label": "_totalShares",
+            "type": "t_uint256",
+            "src": "ontracts\\StakedToken.sol:38"
+          },
+          {
+            "contract": "StakedToken",
+            "label": "_shareBalances",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "ontracts\\StakedToken.sol:40"
+          },
+          {
+            "contract": "StakedToken",
+            "label": "_allowedTokens",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "ontracts\\StakedToken.sol:42"
+          },
+          {
+            "contract": "StakedToken",
+            "label": "_name",
+            "type": "t_string_storage",
+            "src": "ontracts\\StakedToken.sol:44"
+          },
+          {
+            "contract": "StakedToken",
+            "label": "_symbol",
+            "type": "t_string_storage",
+            "src": "ontracts\\StakedToken.sol:45"
+          },
+          {
+            "contract": "StakedToken",
+            "label": "_decimals",
+            "type": "t_uint8",
+            "src": "ontracts\\StakedToken.sol:46"
+          },
+          {
+            "contract": "StakedToken",
+            "label": "isBlacklisted",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "ontracts\\StakedToken.sol:48"
+          },
+          {
+            "contract": "StakedToken",
+            "label": "downstreamCaller",
+            "type": "t_contract(DownstreamCaller)985",
+            "src": "ontracts\\StakedToken.sol:54"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_contract(DownstreamCaller)985": {
+            "label": "contract DownstreamCaller"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    }
+  },
+  "admin": {
+    "address": "0xDDC0A5006CB3554C59Ffc1DD55eE4b5d7E0C9878",
+    "txHash": "0x62565cfb364170c3022665a39b30c0088452f2f0ce5edf8059b19fe427f9d63c"
+  }
+}

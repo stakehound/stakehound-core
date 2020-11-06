@@ -76,6 +76,10 @@ const config: BuidlerConfig = {
       ...createHDAccountConfig("ropsten"),
       chainId: 3,
     },
+    mainnet: {
+      ...createHDAccountConfig("mainnet"),
+      chainId: 1,
+    },
   },
   paths: {
     artifacts: "./artifacts",

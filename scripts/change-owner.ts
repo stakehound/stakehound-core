@@ -12,15 +12,24 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
-  const newSupplyController = '0x1c14600daeca8852BA559CC8EdB1C383B8825906';
-  const stakedTokenAddress = '0x1c14600daeca8852BA559CC8EdB1C383B8825906';
+  // Testnet
+  // const stakedTokenAddress = '0xEc1b213A3577f8d74e1d3970b8643D50C33C7BdE';
+
+  //Mainnet
+  // testedTest
+  // const stakedTokenAddress = '0x7DEfd41888692cDD14820266F70506990D7BD216';
+  // stakedXZC
+  const stakedTokenAddress = '0x160B1E5aaBFD70B2FC40Af815014925D71CEEd7E';
+
+  const newOwner = '0x619bB406Eb26E27d056AB3DcEC64EBb66BEdC425';
+  // const newOwner = '0x0b0B977facc378365E9AEdbe0bc28EE6Cd7f09Ed';
 
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  console.log("Changing supply contro0ller of stakedToken...");
-  await stakedToken.setSupplyController(newSupplyController);
-  console.log("Changed supply controller of stakedToken to:", newSupplyController);
+  console.log("Transferring ownership of stakedToken...");
+  await stakedToken.transferOwnership(newOwner);
+  console.log("Transferred ownership of stakedToken to:", newOwner);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
