@@ -1,9 +1,9 @@
 import chai from "chai";
 import { Signer } from "@ethersproject/abstract-signer";
 import { deployContract, solidity } from "ethereum-waffle";
-import { ethers, upgrades } from "@nomiclabs/buidler";
+import { ethers, upgrades } from "hardhat";
 
-import MockDownstreamArtifact from "../artifacts/MockDownstream.json";
+import MockDownstreamArtifact from "../artifacts/contracts/mocks/MockDownstream.sol/MockDownstream.json";
 
 import { StakedToken } from "../typechain/StakedToken";
 import { MockDownstream } from "../typechain/MockDownstream";

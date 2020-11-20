@@ -1,5 +1,5 @@
 import { Signer } from "@ethersproject/abstract-signer";
-import { task } from "@nomiclabs/buidler/config";
+import { task } from "hardhat/config";
 
 import { TASK_ACCOUNTS } from "./task-names";
 

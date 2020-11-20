@@ -1,29 +1,25 @@
+import { HardhatUserConfig, HttpNetworkUserConfig } from "hardhat/types";
 import { config as dotenvConfig } from "dotenv";
 import { resolve } from "path";
 dotenvConfig({ path: resolve(__dirname, "./.env") });
 
-import { BuidlerConfig, usePlugin } from "@nomiclabs/buidler/config";
-import { HDAccountsConfig } from "@nomiclabs/buidler/types";
 import "./tasks/accounts";
 import "./tasks/clean";
 import "./tasks/typechain";
 
-usePlugin("@nomiclabs/buidler-waffle");
-usePlugin("solidity-coverage");
-usePlugin('@openzeppelin/buidler-upgrades');
-usePlugin('buidler-contract-sizer');
-// usePlugin("buidler-gas-reporter");
+import "@nomiclabs/hardhat-waffle";
+// import "solidity-coverage";
+import "@openzeppelin/hardhat-upgrades";
+import "hardhat-contract-sizer";
+import "hardhat-typechain";
+// import "buidler-gas-reporter";
 
-interface NetworkConfig {
-  accounts: HDAccountsConfig,
-  url: string;
-}
 
 /**
  * @dev You must have a `.env` file. Follow the example in `.env.example`.
  * @param {string} network The name of the testnet
  */
-function createHDAccountConfig(network: string): NetworkConfig {
+function createHDAccountConfig(network: string): HttpNetworkUserConfig {
   if (!process.env.MNEMONIC) {
     console.log("Please set your MNEMONIC in a .env file");
     process.exit(1);
@@ -44,13 +40,13 @@ function createHDAccountConfig(network: string): NetworkConfig {
   };
 }
 
-const config: BuidlerConfig = {
-  defaultNetwork: "buidlerevm",
+const config: HardhatUserConfig  = {
+  defaultNetwork: "hardhat",
   mocha: {
     delay: true,
   },
   networks: {
-    buidlerevm: {
+    hardhat: {
       chainId: 31337,
     },
     local: {
@@ -84,17 +80,18 @@ const config: BuidlerConfig = {
   paths: {
     artifacts: "./artifacts",
     cache: "./cache",
-    coverage: "./coverage",
-    coverageJson: "./coverage.json",
+    // coverage: "./coverage",
+    // coverageJson: "./coverage.json",
     root: "./",
     sources: "./contracts",
     tests: "./test",
   },
-  solc: {
-    /* https://buidler.dev/buidler-evm/#solidity-optimizer-support */
-    optimizer: {
-      enabled: true,
-      runs: 200,
+  solidity: {
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
     },
     version: "0.6.10",
   },

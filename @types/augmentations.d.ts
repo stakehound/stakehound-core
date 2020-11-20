@@ -5,8 +5,8 @@ export interface TypechainConfig {
   target?: "ethers-v4" | "ethers-v5" | "truffle-v4" | "truffle-v5" | "web3-v1";
 }
 
-declare module "@nomiclabs/buidler/types" {
-  interface BuidlerConfig {
+declare module "hardhat/types" {
+  interface HardhatUserConfig {
     typechain?: TypechainConfig;
   }
 
@@ -14,10 +14,5 @@ declare module "@nomiclabs/buidler/types" {
     coverage: string;
     coverageJson: string;
     typechain: string;
-  }
-}
-declare module "mocha" {
-  export interface Context {
-    greeter: Greeter;
   }
 }

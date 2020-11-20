@@ -1,13 +1,10 @@
-// We require the Buidler Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-// When running the script with `buidler run <script>` you'll find the Buidler
-// Runtime Environment's members available in the global scope.
-import { ethers } from "@nomiclabs/buidler";
+
+import { ethers } from "hardhat";
 import { Contract, ContractFactory } from "ethers";
 import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
-  // Buidler always runs the compile task when running scripts through it.
+  // Hardhat always runs the compile task when running scripts through it.
   // If this runs in a standalone fashion you may want to call compile manually
   // to make sure everything is compiled
   // await run("compile");
@@ -16,8 +13,8 @@ async function main(): Promise<void> {
   // const stakedTokenAddress = '0x30183D8025Aa735ea96341b1A17bB1a175AF3608';
   // const amount = ethers.BigNumber.from(10000000000);
   // stakedXEM
-  // const stakedTokenAddress = '0x0957C4D096dcb6DaF9C7B1A865b3ec9df0d12883';
-  // const amount = ethers.BigNumber.from(100000000);
+  const stakedTokenAddress = '0x0957C4D096dcb6DaF9C7B1A865b3ec9df0d12883';
+  const amount = ethers.BigNumber.from(100000000);
   // stakedDASH
   // const stakedTokenAddress = '0x7E7A46FECeDAC72Eca55f762eD557c3756432489';
   // const amount = ethers.BigNumber.from(10000000000);
@@ -28,8 +25,8 @@ async function main(): Promise<void> {
 
   // Rinkeby
   // stakedXZC
-  const stakedTokenAddress = '0x7DEfd41888692cDD14820266F70506990D7BD216';
-  const amount = ethers.BigNumber.from(1000000000000);
+  // const stakedTokenAddress = '0x7DEfd41888692cDD14820266F70506990D7BD216';
+  // const amount = ethers.BigNumber.from(1000000000000);
 
 
   // Mainnet

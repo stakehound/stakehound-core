@@ -1,11 +1,11 @@
 import { Signer } from "@ethersproject/abstract-signer";
 import { expect } from "chai";
-import { ethers, upgrades } from "@nomiclabs/buidler";
+import { ethers, upgrades } from "hardhat";
 import { StakedToken } from "../typechain/StakedToken";
 import { BigNumberish, BigNumber } from "ethers";
 import { MockDownstream } from "../typechain/MockDownstream";
 import { DownstreamCaller } from "../typechain/DownstreamCaller";
-import DownstreamCallerArtifact from "../artifacts/DownstreamCaller.json";
+import DownstreamCallerArtifact from "../artifacts/contracts/DownstreamCaller.sol/DownstreamCaller.json";
 import { deployContract } from "ethereum-waffle";
 
 export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultiplier: BigNumberish): void {

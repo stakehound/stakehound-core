@@ -22,7 +22,7 @@
     "tasks/**/*",
     "test/**/*",
     "typechain/**/*",
-    "buidler.config.ts"
+    "hardhat.config.ts"
   ],
   "files": [
     "./node_modules/@nomiclabs/buidler-ethers/src/type-extensions.d.ts",
