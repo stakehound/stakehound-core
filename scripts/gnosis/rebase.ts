@@ -15,82 +15,18 @@ async function main(): Promise<void> {
 
   //Mainnet
   // testedTest
-  const stakedTokenAddress = '0x7DEfd41888692cDD14820266F70506990D7BD216';
+  // const stakedTokenAddress = '0x7DEfd41888692cDD14820266F70506990D7BD216';
+  // stakedXZC
+  const stakedTokenAddress = '0x160B1E5aaBFD70B2FC40Af815014925D71CEEd7E';
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-
-  const recipient = '0xe206E5Cb1fc643908A75906Af6F919a487Af76AC';
-  const amount = ethers.BigNumber.from(10000000000);
+  const amount = ethers.BigNumber.from(216314102);
   const positive = true;
 
 
   const callData = stakedToken.interface.encodeFunctionData('distributeTokens', [amount, positive]);
   console.log("Call data", callData);
-
-
-
-
-  // const supplyControllerGnosisSafe = '0x8AC14Fca1aF782582e3F7c67783aE7825Cf8b173';
-
-  // const [signer] = await ethers.getSigners();
-
-  // console.log(`Deployer account: ${await signer.getAddress()}`);
-  // console.log("Account balance:", (await signer.getBalance()).toString());
-
-  // const gnosisSafe = new ethers.Contract(supplyControllerGnosisSafe, GnosisSafeSol.abi, signer);
-
-  // console.log();
-
-
-//   to:
-// 0x7DEfd41888692cDD14820266F70506990D7BD216
-// value:
-// 0
-// data:
-// 0x40c10f19000000000000000000000000e206e5cb1fc643908a75906af6f919a487af76ac00000000000000000000000000000000000000000000000000000002540be400
-// operation:
-// 0
-// safeTxGas:
-// 93443
-// baseGas:
-// 0
-// gasPrice:
-// 0
-// gasToken:
-// 0x0000000000000000000000000000000000000000
-// refundReceiver:
-// 0x0000000000000000000000000000000000000000
-// nonce:
-// 0
-
-
-  // const to = stakedTokenAddress;
-  // const valueInWei = 0;
-  // const data = ''; // TODO
-  // const operation = 0; // Call
-  // const safeTxGas = 0;
-  // const baseGas = 0;
-  // const gasPrice = 0;
-  // const gasToken = 0
-  // const refundReceiver = await signer.getAddress();
-  // const sigs: string[] = [];
-
-
-  // const response = gnosisSafe.execTransaction(
-  //   to,
-  //   valueInWei,
-  //   data,
-  //   operation,
-  //   safeTxGas,
-  //   baseGas,
-  //   gasPrice,
-  //   gasToken,
-  //   refundReceiver,
-  //   sigs,
-  // )
-
-  // console.log(response);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

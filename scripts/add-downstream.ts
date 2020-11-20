@@ -18,14 +18,16 @@ async function main(): Promise<void> {
   // const stakedTokenAddress = '0x0957C4D096dcb6DaF9C7B1A865b3ec9df0d12883';
   // stakedDASH
   // const stakedTokenAddress = '0x7E7A46FECeDAC72Eca55f762eD557c3756432489';
+  // stakedETH
+  const stakedTokenAddress = '0x09A33bE88094268360b9e340efD3657bBf351AA6';
 
   // Mainnet
   // stakedXZC
-  const stakedTokenAddress = '0x160B1E5aaBFD70B2FC40Af815014925D71CEEd7E';
+  // const stakedTokenAddress = '0x160B1E5aaBFD70B2FC40Af815014925D71CEEd7E';
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  const downstreamAddress  = "0x70a78cde9687e641e5e67b52fdecbb4739c26a32";
+  const downstreamAddress  = "0xcfe1a96de8f00415cfbb6fe46138f2dc003d1421";
 
   let ABI = ["function sync()"];
   let iface = new ethers.utils.Interface(ABI);

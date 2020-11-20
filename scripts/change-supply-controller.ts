@@ -12,12 +12,23 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
-  const newSupplyController = '0x314f8e805B347af013CD952e0929CB573abbf4d1';
+
+
+  // Rinkeby
+  // stakedXZC
+  const stakedTokenAddress = '0x7DEfd41888692cDD14820266F70506990D7BD216';
+
+
   //Mainnet
   // testedTest
   // const stakedTokenAddress = '0x7DEfd41888692cDD14820266F70506990D7BD216';
   // stakedXZC
-  const stakedTokenAddress = '0x160B1E5aaBFD70B2FC40Af815014925D71CEEd7E';
+  // const stakedTokenAddress = '0x160B1E5aaBFD70B2FC40Af815014925D71CEEd7E';
+
+
+
+
+  const newSupplyController = '0xbBf527Fb69Df850Dc17983C42499A3b5529fB64e';
 
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
