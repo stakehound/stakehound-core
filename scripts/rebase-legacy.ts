@@ -9,8 +9,7 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
-  // stakedXZC
-  const stakedTokenAddress = '0x30183D8025Aa735ea96341b1A17bB1a175AF3608';
+  const stakedTokenAddress = process.env.STAKED_TOKEN_ADDRESS || '';
   const amount = ethers.BigNumber.from(121125346738000);
 
   // A Human-Readable ABI; any supported ABI format could be used

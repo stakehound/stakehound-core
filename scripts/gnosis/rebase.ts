@@ -10,19 +10,12 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
-  //Mainnet
-  // testedTest
-  // const stakedTokenAddress = '0x7DEfd41888692cDD14820266F70506990D7BD216';
-  // stakedXZC
-  const stakedTokenAddress = '0x160B1E5aaBFD70B2FC40Af815014925D71CEEd7E';
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
   const amount = ethers.BigNumber.from(216314102);
   const positive = true;
 
-
-  const callData = stakedToken.interface.encodeFunctionData('distributeTokens', [amount, positive]);
+  const callData = StakedToken.interface.encodeFunctionData('distributeTokens', [amount, positive]);
   console.log("Call data", callData);
 }
 

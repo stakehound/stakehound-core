@@ -9,22 +9,12 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
-  // stakedXZC
-  // const stakedTokenAddress = '0x30183D8025Aa735ea96341b1A17bB1a175AF3608';
-  // stakedXEM
-  // const stakedTokenAddress = '0x0957C4D096dcb6DaF9C7B1A865b3ec9df0d12883';
-  // stakedDASH
-  // const stakedTokenAddress = '0x7E7A46FECeDAC72Eca55f762eD557c3756432489';
-
-
-  //Mainnet
-  // testedTest
-  const stakedTokenAddress = '0x7DEfd41888692cDD14820266F70506990D7BD216';
+  const stakedTokenAddress = process.env.STAKED_TOKEN_ADDRESS || '';
 
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  console.log(`Total supply of ${await stakedToken.name()}: ${await stakedToken.totalSupply()}`);
+  console.log(`Total supply of ${await stakedToken.name()} (${await stakedToken.symbol()}): ${await stakedToken.totalSupply()}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -9,6 +9,7 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
+  // Mainnet
   const newOwner = '0x619bB406Eb26E27d056AB3DcEC64EBb66BEdC425';
   // const newOwner = '0x0b0B977facc378365E9AEdbe0bc28EE6Cd7f09Ed';
 

@@ -12,7 +12,7 @@ import "@nomiclabs/hardhat-waffle";
 import "@openzeppelin/hardhat-upgrades";
 import "hardhat-contract-sizer";
 import "hardhat-typechain";
-// import "buidler-gas-reporter";
+// import "hardhat-gas-reporter";
 
 
 /**

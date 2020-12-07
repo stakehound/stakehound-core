@@ -9,7 +9,7 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
-  const stakedTokenAddress = '0x30183D8025Aa735ea96341b1A17bB1a175AF3608';
+  const stakedTokenAddress = process.env.STAKED_TOKEN_ADDRESS || '';
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 

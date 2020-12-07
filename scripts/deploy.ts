@@ -16,11 +16,10 @@ async function main(): Promise<void> {
   );
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
-  const tokenName = "StakeHound stakedXZC";
-  const tokenSymbol = "stakedXZC";
+  const tokenName = "stakedXEM";
+  const tokenSymbol = "stXEM";
   const tokenDecimals = 8;
-  const tokenMaxSupply = ethers.BigNumber.from(10).pow(9 + tokenDecimals + 6);
-  // const tokenMaxSupply = ethers.BigNumber.from(10).pow(9 + tokenDecimals + 6); //Eth
+  const tokenMaxSupply = ethers.BigNumber.from(10).pow(10 + tokenDecimals + 8);
   const tokenInitialSupply = ethers.BigNumber.from("0");
 
   // We get the contract to deploy

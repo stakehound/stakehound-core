@@ -1,5 +1,5 @@
 
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { Contract, ContractFactory } from "ethers";
 import { StakedToken } from "../typechain/StakedToken";
 
@@ -10,15 +10,14 @@ async function main(): Promise<void> {
   // await run("compile");
 
   const stakedTokenAddress = process.env.STAKED_TOKEN_ADDRESS || '';
-  const amount = ethers.BigNumber.from('10000000000000000000000');
-  const positive = true;
-
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  console.log(`Issuing ${amount.toString()} as rewards`);
-  await stakedToken.distributeTokens(amount, positive);
-  console.log(`Issued ${amount.toString()} as rewards`);
+  const newName = "stakedFIRO";
+  const newSymbol = "stFIRO";
+
+  await stakedToken.setName(newName);
+  await stakedToken.setSymbol(newSymbol);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

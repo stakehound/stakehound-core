@@ -1,9 +1,9 @@
 {
   "manifestVersion": "3.1",
   "impls": {
-    "f3566b055ace19601ead0e77271ad61dd3e6943615097bd36f88f8cb98676de5": {
-      "address": "0xb5e38A903fF8cde354e9942b430605C6FFf92B2d",
-      "txHash": "0x0963ee199073e3eb497525c9c1417f6fa1ac25838d5befdecb82f391541aef8e",
+    "f761f400fd0759d3bdebd36a9a3447177f2b5c76aba480f0b78af94af04715b1": {
+      "address": "0xB447E23Da06379650fFaFD43430ef2c66510b0db",
+      "txHash": "0x5bb0158da17eea0d5c5dc2422b2e6599f662e945737f5ec267f2c7b3cb8ddf5a",
       "layout": {
         "storage": [
           {
@@ -58,79 +58,79 @@
             "contract": "StakedToken",
             "label": "supplyController",
             "type": "t_address",
-            "src": "contracts\\StakedToken.sol:29"
+            "src": "ontracts\\StakedToken.sol:29"
           },
           {
             "contract": "StakedToken",
             "label": "MAX_UINT256",
             "type": "t_uint256",
-            "src": "contracts\\StakedToken.sol:31"
+            "src": "ontracts\\StakedToken.sol:31"
           },
           {
             "contract": "StakedToken",
             "label": "_maxExpectedSupply",
             "type": "t_uint256",
-            "src": "contracts\\StakedToken.sol:34"
+            "src": "ontracts\\StakedToken.sol:34"
           },
           {
             "contract": "StakedToken",
             "label": "_sharesPerToken",
             "type": "t_uint256",
-            "src": "contracts\\StakedToken.sol:36"
+            "src": "ontracts\\StakedToken.sol:36"
           },
           {
             "contract": "StakedToken",
             "label": "_totalSupply",
             "type": "t_uint256",
-            "src": "contracts\\StakedToken.sol:37"
+            "src": "ontracts\\StakedToken.sol:37"
           },
           {
             "contract": "StakedToken",
             "label": "_totalShares",
             "type": "t_uint256",
-            "src": "contracts\\StakedToken.sol:38"
+            "src": "ontracts\\StakedToken.sol:38"
           },
           {
             "contract": "StakedToken",
             "label": "_shareBalances",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts\\StakedToken.sol:40"
+            "src": "ontracts\\StakedToken.sol:40"
           },
           {
             "contract": "StakedToken",
             "label": "_allowedTokens",
             "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
-            "src": "contracts\\StakedToken.sol:42"
+            "src": "ontracts\\StakedToken.sol:42"
           },
           {
             "contract": "StakedToken",
             "label": "_name",
             "type": "t_string_storage",
-            "src": "contracts\\StakedToken.sol:44"
+            "src": "ontracts\\StakedToken.sol:44"
           },
           {
             "contract": "StakedToken",
             "label": "_symbol",
             "type": "t_string_storage",
-            "src": "contracts\\StakedToken.sol:45"
+            "src": "ontracts\\StakedToken.sol:45"
           },
           {
             "contract": "StakedToken",
             "label": "_decimals",
             "type": "t_uint8",
-            "src": "contracts\\StakedToken.sol:46"
+            "src": "ontracts\\StakedToken.sol:46"
           },
           {
             "contract": "StakedToken",
             "label": "isBlacklisted",
             "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts\\StakedToken.sol:48"
+            "src": "ontracts\\StakedToken.sol:48"
           },
           {
             "contract": "StakedToken",
             "label": "downstreamCaller",
             "type": "t_contract(DownstreamCaller)985",
-            "src": "contracts\\StakedToken.sol:54"
+            "src": "ontracts\\StakedToken.sol:54"
           }
         ],
         "types": {
@@ -172,7 +172,7 @@
     }
   },
   "admin": {
-    "address": "0xC76343fB3DF39aA276ABf98eEd5772A72515Ec54",
-    "txHash": "0x2a1e333d0abdad80a0850d7da81f9b7ab7d91676fb4e9edff1573a0adb73b00b"
+    "address": "0xB320eB148442c0cEA042A36fF21011e9945718F9",
+    "txHash": "0x826b8c413a89241baaf2b9d4337d8a3134f74a273f563ebcde796f44566be153"
   }
 }

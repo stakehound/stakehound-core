@@ -9,29 +9,25 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
+  const stakedTokenAddress = process.env.STAKED_TOKEN_ADDRESS || '';
+
+  // Ropsten
   // stakedXZC
-  // const stakedTokenAddress = '0x30183D8025Aa735ea96341b1A17bB1a175AF3608';
   // const amount = ethers.BigNumber.from(10000000000);
   // stakedXEM
-  const stakedTokenAddress = '0x0957C4D096dcb6DaF9C7B1A865b3ec9df0d12883';
   const amount = ethers.BigNumber.from(100000000);
   // stakedDASH
-  // const stakedTokenAddress = '0x7E7A46FECeDAC72Eca55f762eD557c3756432489';
   // const amount = ethers.BigNumber.from(10000000000);
   // stakedETH
-  // const stakedTokenAddress = '0x09A33bE88094268360b9e340efD3657bBf351AA6';
   // const amount = ethers.BigNumber.from('100000000000000000000000');
 
 
   // Rinkeby
   // stakedXZC
-  // const stakedTokenAddress = '0x7DEfd41888692cDD14820266F70506990D7BD216';
   // const amount = ethers.BigNumber.from(1000000000000);
-
 
   // Mainnet
   // stakedXZC
-  // const stakedTokenAddress = '0x160B1E5aaBFD70B2FC40Af815014925D71CEEd7E';
   // const amount = ethers.BigNumber.from(100000000);
 
   const recipient = '0x0D8C81966d7a47DD3961f3B79d2BA4306D87c6B9';
