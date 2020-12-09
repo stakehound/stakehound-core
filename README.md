@@ -23,6 +23,10 @@ We select the maximum possible granularity from the maximum supply provided in t
 There is a limit of how much you can increase the supply via reward distributiin before you start losing precision (you can only increase the supply by some integer > 1).
 For all reaslistic tokens this limit is somewhere after 30 doublings of the supply via the rewards distribtuion(not affected by issuing new tokens to holders).
 
+## Audit
+
+The current version of the Solidity smart contract code has been audity by Quantstamp - [report](audits/StakeHound-Quantstamp-audit-report.pdf)
+
 ## Attributions
 
 The dynamic balance functionality is inspired by Ampleforth https://github.com/ampleforth/uFragments
