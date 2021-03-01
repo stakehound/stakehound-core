@@ -14,7 +14,7 @@ async function main(): Promise<void> {
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  const downstreamAddress  = "0xab2f9b13b4aca6884fdbb9e4a1f767c82c53688f";
+  const downstreamAddress  = "0xfa2cbc26eea699d91b8c479e82c5cd3b93b065d9";
 
   let ABI = ["function sync()"];
   let iface = new ethers.utils.Interface(ABI);
@@ -23,7 +23,7 @@ async function main(): Promise<void> {
   console.log(`Adding function call to downstream`);
   await stakedToken.addTransaction(downstreamAddress, data);
 
-  console.log(`Added function call to downstream, total downstream transactions: ${await stakedToken.transactionsSize()}`);
+  console.log(`Added function call to downstream`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

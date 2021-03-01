@@ -15,11 +15,11 @@ async function main(): Promise<void> {
   // stakedXZC
   // const amount = ethers.BigNumber.from(10000000000);
   // stakedXEM
-  const amount = ethers.BigNumber.from(100000000);
+  // const amount = ethers.BigNumber.from(100000000);
   // stakedDASH
   // const amount = ethers.BigNumber.from(10000000000);
   // stakedETH
-  // const amount = ethers.BigNumber.from('100000000000000000000000');
+  const amount = ethers.BigNumber.from('100000000000000000000000');
 
 
   // Rinkeby
@@ -30,7 +30,7 @@ async function main(): Promise<void> {
   // stakedXZC
   // const amount = ethers.BigNumber.from(100000000);
 
-  const recipient = '0x0D8C81966d7a47DD3961f3B79d2BA4306D87c6B9';
+  const recipient = '0x880772af311d7F3Bb2cf10A789Fa1264815f14e8';
 
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
