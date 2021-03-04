@@ -6,7 +6,9 @@ This repository contains the stakedToken ERC20 smart contract, which allows for 
 
 ## Testnet
 
-It is live on the Ropset testnet, see [this guide](https://stakehound.com/docs/testnet) to try it out. The contract address is 0x30183D8025Aa735ea96341b1A17bB1a175AF3608
+It is live on the Ropset testnet, see [this guide](https://stakehound.com/docs/steth-testnet-guide/) to try out stETH. The contract address is 0x09A33bE88094268360b9e340efD3657bBf351AA6
+
+You can find the guide for all our testnet tokens in [the documentation](https://stakehound.com/faq/)
 
 ## Setup
 

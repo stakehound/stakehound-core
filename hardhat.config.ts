@@ -13,6 +13,7 @@ import "@openzeppelin/hardhat-upgrades";
 import "hardhat-contract-sizer";
 import "hardhat-typechain";
 // import "hardhat-gas-reporter";
+import "@nomiclabs/hardhat-etherscan";
 
 
 /**
@@ -98,6 +99,10 @@ const config: HardhatUserConfig  = {
   typechain: {
     outDir: "typechain",
     target: "ethers-v5",
+  },
+  // @ts-ignore
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
 };
 

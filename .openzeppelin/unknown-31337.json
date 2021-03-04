@@ -345,9 +345,9 @@
         }
       }
     },
-    "f3566b055ace19601ead0e77271ad61dd3e6943615097bd36f88f8cb98676de5": {
+    "d4a9d30d775b980cf02533b51f3707a6911151e43596bd8fb695f5ed4d0f58ab": {
       "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-      "txHash": "0xb5bcf51126f22558aa2e5bde7fc1261591bd98314b01ceebecd5b0ea3ceb6d1a",
+      "txHash": "0x3ce97071d38969408b89e026bc0500021ed26e73e0010c4407337f82adf30e5a",
       "layout": {
         "storage": [
           {
@@ -473,7 +473,7 @@
           {
             "contract": "StakedToken",
             "label": "downstreamCaller",
-            "type": "t_contract(DownstreamCaller)985",
+            "type": "t_contract(DownstreamCaller)986",
             "src": "contracts\\StakedToken.sol:54"
           }
         ],
@@ -499,11 +499,11 @@
           "t_mapping(t_address,t_bool)": {
             "label": "mapping(address => bool)"
           },
-          "t_contract(DownstreamCaller)985": {
-            "label": "contract DownstreamCaller"
-          },
           "t_bool": {
             "label": "bool"
+          },
+          "t_contract(DownstreamCaller)986": {
+            "label": "contract DownstreamCaller"
           },
           "t_array(t_uint256)49_storage": {
             "label": "uint256[49]"
@@ -514,9 +514,9 @@
         }
       }
     },
-    "79dbd6739d7a8d590f9ece29f4a3352030d755dbd84677d5a064a6f743a03471": {
+    "c6c5464e921dec9354328010cebc2c391b88adb83cc6aa4ccfc30aecb3fe1b05": {
       "address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
-      "txHash": "0xbac05d195d450f089458448a9a18412fb587056065e93335370a667e32245588",
+      "txHash": "0x90c93b3b583f664c7aae25f0467da88d4283aff65d18d77519f8a8dc35521e28",
       "layout": {
         "storage": [
           {
@@ -642,7 +642,7 @@
           {
             "contract": "StakedToken",
             "label": "downstreamCaller",
-            "type": "t_contract(DownstreamCaller)985",
+            "type": "t_contract(DownstreamCaller)986",
             "src": "contracts\\StakedToken.sol:54"
           },
           {
@@ -677,7 +677,7 @@
           "t_mapping(t_address,t_bool)": {
             "label": "mapping(address => bool)"
           },
-          "t_contract(DownstreamCaller)985": {
+          "t_contract(DownstreamCaller)986": {
             "label": "contract DownstreamCaller"
           },
           "t_array(t_uint256)49_storage": {
@@ -692,6 +692,6 @@
   },
   "admin": {
     "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-    "txHash": "0xdaee56511cdf32eee334257d11fcfafb94e2c943f518f3763ca768855f19032c"
+    "txHash": "0x52c9be0ab70f72512f49bb48732a9065e7375148954544397ec32cd4022ff196"
   }
 }

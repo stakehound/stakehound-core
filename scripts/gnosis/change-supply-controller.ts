@@ -1,7 +1,6 @@
 
 import { ethers } from "hardhat";
 import { Contract, ContractFactory } from "ethers";
-import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
   // Hardhat always runs the compile task when running scripts through it.
@@ -11,16 +10,18 @@ async function main(): Promise<void> {
 
   const stakedTokenAddress = process.env.STAKED_TOKEN_ADDRESS || '';
 
-  // Gnosis - mainnet
-  const newOwner = '0x619bB406Eb26E27d056AB3DcEC64EBb66BEdC425';
+  // Ropsten - fireblocks
+  const newSupplyController = '0x1beC1E14b766CD13e0a151653C8f7dA3DA3630af';
 
+  // Mainnet
+  // const newSupplyController = '0x314f8e805B347af013CD952e0929CB573abbf4d1';
+  // FireBlocks
+  // const newSupplyController = '0xE14ce18903B0d3678a098F3BdEDA0AAC3790Ac3B';
 
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
+  const callData = StakedToken.interface.encodeFunctionData('setSupplyController', [newSupplyController]);
 
-  console.log("Transferring ownership of stakedToken...");
-  await stakedToken.transferOwnership(newOwner);
-  console.log("Transferred ownership of stakedToken to:", newOwner);
+  console.log("Call data", callData);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
