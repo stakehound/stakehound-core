@@ -1,9 +1,14 @@
 
-import { ethers, upgrades } from "hardhat";
-import { BigNumber, Contract, ContractFactory } from "ethers";
-import Axios, { AxiosInstance } from "axios";
+import { ethers } from "hardhat";
+import { BigNumber, Contract } from "ethers";
+import Axios from "axios";
 import fs from "fs";
 import path from "path";
+
+import stakedTokenABI from '../stakedTokenABI.json'; // This import style requires "esModuleInterop", see "side notes"
+import poolTokenABI from '../poolTokenABI.json'; // This import style requires "esModuleInterop", see "side notes"
+
+
 const cliProgress = require('cli-progress');
 const _colors = require('colors');
 
@@ -107,8 +112,7 @@ async function main(): Promise<void> {
   // await run("compile");
 
   const provider = new ethers.providers.AlchemyProvider('homestead', process.env.ALCHEMY_API_KEY);
-  let abi = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'stakedTokenABI.json')).toString());
-  let contractInterface = new ethers.utils.Interface(abi);
+  let contractInterface = new ethers.utils.Interface(stakedTokenABI);
   console.log('Contract loaded');
 
   // Geting all transfers which i need to decode
@@ -116,7 +120,7 @@ async function main(): Promise<void> {
   const transfers = await getTokenLogs(tokenAddress);
   console.log(`Total of ${transfers.length} transfers found`);
 
-  const tokenEvents = getEventsFromAbi(abi);
+  const tokenEvents = getEventsFromAbi(stakedTokenABI);
   const availableAddresses: { [key: string]: BigNumber } = {};
   const b1 = new cliProgress.SingleBar({
     format: 'Transfer Processing Progress |' + _colors.cyan('{bar}') + '| {value}/{total}',
@@ -155,8 +159,7 @@ async function main(): Promise<void> {
     hideCursor: true
   });
 
-  abi = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'poolTokenABI.json')).toString());
-  contractInterface = new ethers.utils.Interface(abi);
+  contractInterface = new ethers.utils.Interface(poolTokenABI);
 
   for await (const poolAddress of poolAddresses) {
     // Get balance of the poolAddress
@@ -165,7 +168,7 @@ async function main(): Promise<void> {
     const poolBalance = ethers.BigNumber.from(await getTokenBalance(calldata, tokenAddress, blockNumber));
     const logs = await getTokenLogs(poolAddress);
     // Get holders of the pool token
-    const contract = new Contract(poolAddress, abi, provider);
+    const contract = new Contract(poolAddress, poolTokenABI, provider);
     // Total amount of LP tokens distributed between LP token holders
     const totalPoolSupply = await contract.totalSupply();
 
