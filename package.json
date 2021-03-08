@@ -90,7 +90,10 @@
   },
   "dependencies": {
     "@gnosis.pm/safe-contracts": "^1.2.0",
+    "abi-decoder": "^2.4.0",
+    "axios": "^0.21.1",
     "browser-env": "^3.3.0",
+    "cli-progress": "^3.9.0",
     "contract-proxy-kit": "^2.2.0-alpha.1",
     "hardhat-typechain": "^0.3.3"
   }
