@@ -12,13 +12,13 @@ import poolTokenABI from '../poolTokenABI.json'; // This import style requires "
 const cliProgress = require('cli-progress');
 const _colors = require('colors');
 
-const alchemyUrl = 'https://eth-mainnet.alchemyapi.io/v2/6Kv_bJKux1FXeX5h7ga3GaxICthIx9UG';
+const alchemyUrl =  `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`;
 const etherscanUrl = 'https://api.etherscan.io/api';
 
 const tokenAddress = "0x0C63cAE5fcC2Ca3dDE60a35e50362220651eBEc8";
 const UNISWAP_stXEM = '0xab2f9b13b4aca6884fdbb9e4a1f767c82c53688f'
 const poolAddresses: string[] = [UNISWAP_stXEM];
-const blockNumber = undefined;
+const blockNumber = 12025294;
 
 async function getTokenBalance(
   data: string,
@@ -130,6 +130,7 @@ async function main(): Promise<void> {
   });
 
   // initialize the bar - defining payload token "speed" with the default value "N/A"
+  let totalSupplyWithoutPools = ethers.BigNumber.from(0);
   b1.start(transfers.length, 0);
   for await (const [i, log] of transfers.entries()) {
     const parsedLog = contractInterface.parseLog(log);
@@ -140,16 +141,18 @@ async function main(): Promise<void> {
     }
 
     for await (const index of indexes) {
-      const address = parsedLog.args[indexes[index]];
+      const address = parsedLog.args[indexes[index]].toLowerCase();
       if (!availableAddresses[address] && !poolAddresses.includes(address)) {
         const calldata = contractInterface.encodeFunctionData('balanceOf', [address]);
         const balance = await getTokenBalance(calldata, tokenAddress, blockNumber);
-        availableAddresses[address] = ethers.BigNumber.from(balance);;
+        availableAddresses[address] = ethers.BigNumber.from(balance);
+        totalSupplyWithoutPools = totalSupplyWithoutPools.add(balance);
       }
     }
     b1.update(i + 1)
   }
   b1.stop();
+  console.log("Total supply exluding pools", totalSupplyWithoutPools.toString());
 
   // Processing pool address
   const b2 = new cliProgress.SingleBar({
@@ -172,6 +175,10 @@ async function main(): Promise<void> {
     // Total amount of LP tokens distributed between LP token holders
     const totalPoolSupply = await contract.totalSupply();
 
+    console.log("Pool balance", poolBalance.toString());
+
+    const poolHolderBalances: {[address: string]: BigNumber} = {};
+
     b2.start(logs.length, 0);
     for await (const [i, log] of logs.entries()) {
       const parsedLog = contractInterface.parseLog(log);
@@ -182,17 +189,26 @@ async function main(): Promise<void> {
       }
 
       for await (const index of indexes) {
-        const address = parsedLog.args[indexes[index]];
-        const calldata = contractInterface.encodeFunctionData('balanceOf', [address]);
-        const balance = await getTokenBalance(calldata, poolAddress, blockNumber);
-        if (!availableAddresses[address]) {
-          availableAddresses[address] = ethers.BigNumber.from(balance).mul(poolBalance).div(totalPoolSupply);
-        } else {
-          availableAddresses[address] = availableAddresses[address].add(ethers.BigNumber.from(balance).mul(poolBalance).div(totalPoolSupply));
+        const address = parsedLog.args[indexes[index]].toLowerCase();
+
+        if (!(address in poolHolderBalances)) {
+          const calldata = contractInterface.encodeFunctionData('balanceOf', [address]);
+          const balance = await getTokenBalance(calldata, poolAddress, blockNumber);
+
+          const balanceFromPool = ethers.BigNumber.from(balance).mul(poolBalance).div(totalPoolSupply);
+          poolHolderBalances[address] = balanceFromPool;
         }
       }
-
       b2.update(i + 1);
+    }
+
+    for (const [address, balance] of Object.entries(poolHolderBalances)) {
+      console.log(address, balance.toString());
+      if (!availableAddresses[address]) {
+        availableAddresses[address] = balance;
+      } else {
+        availableAddresses[address] = availableAddresses[address].add(balance);
+      }
     }
   }
 
@@ -200,17 +216,22 @@ async function main(): Promise<void> {
 
   const addressList: { address: string, balance: BigNumber }[] = [];
   let totalSupplyFromAddresses = ethers.BigNumber.from(0);
-  console.log("address,balance,balance[hex]");
+  console.log("address,balance");
+  const decimals = ethers.BigNumber.from("100000000");
+  let fileContent = '';
   Object.keys(availableAddresses).forEach((address: string) => {
     if (availableAddresses[address].gt(0)) {
       totalSupplyFromAddresses = totalSupplyFromAddresses.add(availableAddresses[address]);
-      console.log(address, availableAddresses[address].toNumber(), availableAddresses[address].toHexString());
+      console.log(address, availableAddresses[address].toString());
+      fileContent += `${address},${availableAddresses[address].toString()}\n`;
       addressList.push({
         address,
         balance: availableAddresses[address]
       })
     }
   });
+
+  fs.writeFileSync('airdop.csv', fileContent);
 
   console.log(`\n\nFound total ${addressList.length} unique addresses. Total token amount in addresses: ${totalSupplyFromAddresses}. `);
 }
