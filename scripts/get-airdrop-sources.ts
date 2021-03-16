@@ -217,7 +217,6 @@ async function main(): Promise<void> {
   const addressList: { address: string, balance: BigNumber }[] = [];
   let totalSupplyFromAddresses = ethers.BigNumber.from(0);
   console.log("address,balance");
-  const decimals = ethers.BigNumber.from("100000000");
   let fileContent = '';
   Object.keys(availableAddresses).forEach((address: string) => {
     if (availableAddresses[address].gt(0)) {
