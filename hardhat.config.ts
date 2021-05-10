@@ -76,6 +76,7 @@ const config: HardhatUserConfig  = {
     mainnet: {
       ...createHDAccountConfig("mainnet"),
       chainId: 1,
+      gasMultiplier: 1.2,
     },
   },
   paths: {

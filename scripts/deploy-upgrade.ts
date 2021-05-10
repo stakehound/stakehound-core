@@ -16,18 +16,13 @@ async function main(): Promise<void> {
   );
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
-  const tokenName = "test";
-  const tokenSymbol = "test";
-  const tokenDecimals = 18;
-  const tokenMaxSupply = ethers.BigNumber.from(10).pow(15 + tokenDecimals + 8);
-  const tokenInitialSupply = ethers.BigNumber.from("0");
 
   // We get the contract to deploy
-  const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken: Contract = await upgrades.deployProxy(StakedToken, [tokenName, tokenSymbol, tokenDecimals, tokenMaxSupply, tokenInitialSupply]);
-  await stakedToken.deployed();
+  const StakedToken: ContractFactory = await ethers.getContractFactory("StakedTokenV2");
+  const upgrade: Contract = await upgrades.upgradeProxy('0x5f389b55A999043b1CE0acaa8e66E62cb4c40eE1', StakedToken);
+  await upgrade.deployed();
 
-  console.log(`${tokenName} deployed to: `, stakedToken.address);
+  console.log(`Upgrade deployed to: `, upgrade.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

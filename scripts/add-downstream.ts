@@ -14,7 +14,7 @@ async function main(): Promise<void> {
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  const downstreamAddress  = "0xfa2cbc26eea699d91b8c479e82c5cd3b93b065d9";
+  const downstreamAddress  = "0x70974f06338974d691fa38327ef25d1cf3e87ce6";
 
   let ABI = ["function sync()"];
   let iface = new ethers.utils.Interface(ABI);

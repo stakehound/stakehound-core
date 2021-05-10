@@ -145,6 +145,9 @@ async function main(): Promise<void> {
       if (!availableAddresses[address] && !poolAddresses.includes(address)) {
         const calldata = contractInterface.encodeFunctionData('balanceOf', [address]);
         const balance = await getTokenBalance(calldata, tokenAddress, blockNumber);
+        if(address === '0xE14ce18903B0d3678a098F3BdEDA0AAC3790Ac3B'.toLowerCase()) {
+          console.log('yo', ethers.BigNumber.from(balance).toString());
+        }
         availableAddresses[address] = ethers.BigNumber.from(balance);
         totalSupplyWithoutPools = totalSupplyWithoutPools.add(balance);
       }

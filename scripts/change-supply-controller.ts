@@ -13,6 +13,8 @@ async function main(): Promise<void> {
 
   // Ropsten - fireblocks
   // const newSupplyController = '0x1beC1E14b766CD13e0a151653C8f7dA3DA3630af';
+  // ropsten - deployer
+  // const newSupplyController = '0x0b0B977facc378365E9AEdbe0bc28EE6Cd7f09Ed';
 
   // Mainnet - fireblocks
   const newSupplyController = '0xE14ce18903B0d3678a098F3BdEDA0AAC3790Ac3B';

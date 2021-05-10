@@ -9,20 +9,12 @@ async function main(): Promise<void> {
   // to make sure everything is compiled
   // await run("compile");
 
-  // Divi daily yield 0.001
-
   const stakedTokenAddress = process.env.STAKED_TOKEN_ADDRESS || '';
-  // const amount = ethers.BigNumber.from('1331000000000000000000');
-  const amount = ethers.BigNumber.from('1112131286484589526014'); // ETH
-  // const amount = ethers.BigNumber.from('330000000000000000000'); // DIVI
-  const positive = true;
 
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
 
-  console.log(`Issuing ${amount.toString()} as rewards`);
-  await stakedToken.distributeTokens(amount, positive);
-  console.log(`Issued ${amount.toString()} as rewards`);
+  console.log("Supply controller: ", await stakedToken.supplyController());
 }
 
 // We recommend this pattern to be able to use async/await everywhere
