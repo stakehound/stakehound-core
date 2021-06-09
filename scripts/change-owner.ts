@@ -1,6 +1,6 @@
 
 import { ethers } from "hardhat";
-import { Contract, ContractFactory } from "ethers";
+import { ContractFactory } from "ethers";
 import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
@@ -15,8 +15,8 @@ async function main(): Promise<void> {
   const newOwner = '0x619bB406Eb26E27d056AB3DcEC64EBb66BEdC425';
 
 
-  const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
+  const StakedTokenFactory: ContractFactory = await ethers.getContractFactory("StakedToken");
+  const stakedToken = StakedTokenFactory.attach(stakedTokenAddress) as StakedToken;
 
   console.log("Transferring ownership of stakedToken...");
   await stakedToken.transferOwnership(newOwner);

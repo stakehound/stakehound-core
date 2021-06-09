@@ -1,6 +1,6 @@
 
 import { ethers, upgrades } from "hardhat";
-import { Contract, ContractFactory } from "ethers";
+import { ContractFactory } from "ethers";
 
 async function main(): Promise<void> {
   // Hardhat always runs the compile task when running scripts through it.

@@ -1,14 +1,12 @@
 
 import { ethers } from "hardhat";
-import { Contract, ContractFactory } from "ethers";
+import { ContractFactory } from "ethers";
 
 async function main(): Promise<void> {
   // Hardhat always runs the compile task when running scripts through it.
   // If this runs in a standalone fashion you may want to call compile manually
   // to make sure everything is compiled
   // await run("compile");
-
-  const stakedTokenAddress = process.env.STAKED_TOKEN_ADDRESS || '';
 
   const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
   const callData = StakedToken.interface.encodeFunctionData('pause');

@@ -101,7 +101,6 @@ const config: HardhatUserConfig  = {
     outDir: "typechain",
     target: "ethers-v5",
   },
-  // @ts-ignore
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
   },

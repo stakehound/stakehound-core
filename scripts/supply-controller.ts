@@ -1,6 +1,6 @@
 
 import { ethers } from "hardhat";
-import { Contract, ContractFactory } from "ethers";
+import { ContractFactory } from "ethers";
 import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
@@ -11,8 +11,8 @@ async function main(): Promise<void> {
 
   const stakedTokenAddress = process.env.STAKED_TOKEN_ADDRESS || '';
 
-  const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
+  const StakedTokenFactory: ContractFactory = await ethers.getContractFactory("StakedToken");
+  const stakedToken = StakedTokenFactory.attach(stakedTokenAddress) as StakedToken;
 
   console.log("Supply controller: ", await stakedToken.supplyController());
 }

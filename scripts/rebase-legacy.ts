@@ -1,7 +1,4 @@
-
 import { ethers } from "hardhat";
-import { Contract, ContractFactory } from "ethers";
-import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
   // Hardhat always runs the compile task when running scripts through it.

@@ -13,8 +13,8 @@ import { Contract, ContractFactory } from "ethers";
 chai.use(solidity);
 
 setTimeout(async function () {
-  const signers: Signer[] = await ethers.getSigners();
-  const admin: Signer = signers[0];
+  const signers = await ethers.getSigners();
+  const admin = signers[0] as Signer;
   const decimals = 18;
   const decimalsMultiplier = ethers.BigNumber.from(10).pow(decimals);
 
@@ -28,12 +28,12 @@ setTimeout(async function () {
       this.maxSupply = ethers.BigNumber.from(10).pow(15 + decimals + 6);
       this.initialSupply = ethers.BigNumber.from(1000).mul(this.decimalsMultiplier);
 
-      const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-      const stakedToken: Contract = await upgrades.deployProxy(StakedToken, [this.name, this.symbol, this.decimals, this.maxSupply, this.initialSupply]);
+      const StakedTokenFactory: ContractFactory = await ethers.getContractFactory("StakedToken");
+      const stakedToken: Contract = await upgrades.deployProxy(StakedTokenFactory, [this.name, this.symbol, this.decimals, this.maxSupply, this.initialSupply]);
       await stakedToken.deployed();
       this.stakedToken = stakedToken as StakedToken;
 
-      this.mockDownstream = (await deployContract(admin, MockDownstreamArtifact, [])) as MockDownstream;
+      this.mockDownstream = (await deployContract(admin, MockDownstreamArtifact, [])) as unknown as MockDownstream;
     });
 
     shouldBehaveLikeStakedToken(signers, decimalsMultiplier);

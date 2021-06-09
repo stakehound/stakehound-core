@@ -1,6 +1,6 @@
 
 import { ethers } from "hardhat";
-import { Contract, ContractFactory } from "ethers";
+import { ContractFactory } from "ethers";
 import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
@@ -14,8 +14,8 @@ async function main(): Promise<void> {
   const address = '0xbed67ad3ac03f82ebd467b52babeb94c3d239f07'; // stETH
   const blacklisted = true;
 
-  const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
+  const StakedTokenFactory: ContractFactory = await ethers.getContractFactory("StakedToken");
+  const stakedToken = StakedTokenFactory.attach(stakedTokenAddress) as StakedToken;
 
 
   await stakedToken.setBlacklisted(address, blacklisted);

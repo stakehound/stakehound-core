@@ -5,7 +5,7 @@ pragma solidity 0.6.10;
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import { StakedToken } from "./StakedToken.sol";
 
-contract Wrapper is ERC20Upgradeable {
+contract WrapperMockUpgraded is ERC20Upgradeable {
     using SafeMathUpgradeable for uint256;
 
     StakedToken token;
@@ -45,5 +45,9 @@ contract Wrapper is ERC20Upgradeable {
         _burn(msg.sender, _shares);
 
         token.transfer(msg.sender, _amountToRedeem);
+    }
+
+    function sayHi() public view returns (string memory) {
+        return "hi";
     }
 }

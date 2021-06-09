@@ -1,6 +1,6 @@
 
 import { ethers } from "hardhat";
-import { Contract, ContractFactory } from "ethers";
+import { ContractFactory } from "ethers";
 import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
@@ -32,8 +32,8 @@ async function main(): Promise<void> {
 
   const recipient = '0xFE3FEec104E6B5c3dE77693652Bfc32AD7b5A76f';
 
-  const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
+  const StakedTokenFactory: ContractFactory = await ethers.getContractFactory("StakedToken");
+  const stakedToken = StakedTokenFactory.attach(stakedTokenAddress) as StakedToken;
 
   console.log(`Minting ${amount.toString()} to ${recipient}`);
   await stakedToken.mint(recipient, amount);

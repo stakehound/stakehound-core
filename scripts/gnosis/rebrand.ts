@@ -1,8 +1,6 @@
 
-import { ethers, upgrades } from "hardhat";
-import { Contract, ContractFactory } from "ethers";
-import GnosisSafeSol from '@gnosis.pm/safe-contracts/build/contracts/GnosisSafe.json';
-import { StakedToken } from "../../typechain/StakedToken";
+import { ethers } from "hardhat";
+import { ContractFactory } from "ethers";
 
 async function main(): Promise<void> {
   // Hardhat always runs the compile task when running scripts through it.

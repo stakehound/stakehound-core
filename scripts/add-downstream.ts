@@ -1,6 +1,6 @@
 
 import { ethers } from "hardhat";
-import { Contract, ContractFactory } from "ethers";
+import { ContractFactory } from "ethers";
 import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
@@ -11,13 +11,13 @@ async function main(): Promise<void> {
 
   const stakedTokenAddress = process.env.STAKED_TOKEN_ADDRESS || '';
 
-  const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
+  const StakedTokenFactory: ContractFactory = await ethers.getContractFactory("StakedToken");
+  const stakedToken = StakedTokenFactory.attach(stakedTokenAddress) as StakedToken;
 
   const downstreamAddress  = "0x70974f06338974d691fa38327ef25d1cf3e87ce6";
 
-  let ABI = ["function sync()"];
-  let iface = new ethers.utils.Interface(ABI);
+  const ABI = ["function sync()"];
+  const iface = new ethers.utils.Interface(ABI);
   const data = iface.encodeFunctionData("sync", []);
 
   console.log(`Adding function call to downstream`);
