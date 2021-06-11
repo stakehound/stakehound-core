@@ -10,6 +10,27 @@ export function shouldBehaveLikeWrapper(_signers: SignerWithAddress[], decimalsM
     return ethers.BigNumber.from(amount).mul(decimalsMultiplier);
   }
 
+   async function distributeWrappedTokens(distribution: [number, number][], context: any) {
+     const WrapperFactory = await ethers.getContractFactory("Wrapper");
+     const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
+
+     for (const d of distribution) {
+        const [addressIndex, amount] = d;
+
+        const transferData = StakedTokenFactory.interface.encodeFunctionData('transfer', [_signers[addressIndex].address, toTokenAmount(amount)]);
+        await _signers[0].sendTransaction({ to: context.stakedToken.address, value: 0, data: transferData });
+
+        const approveData = StakedTokenFactory.interface.encodeFunctionData('approve', [context.wrapper.address, toTokenAmount(amount)]);
+        await _signers[addressIndex].sendTransaction({ to: context.stakedToken.address, value: 0, data: approveData });
+     }
+
+     for (const d of distribution) {
+        const [addressIndex, amount] = d;
+        const depositData = WrapperFactory.interface.encodeFunctionData('deposit', [toTokenAmount(amount)]);
+        await _signers[addressIndex].sendTransaction({ to: context.wrapper.address, value: 0, data: depositData });
+     }
+   }
+
   describe("Initialization", async function () {
     it("should be set up properly", async function () {
       const wrapper: Wrapper = this.wrapper;
@@ -53,7 +74,7 @@ export function shouldBehaveLikeWrapper(_signers: SignerWithAddress[], decimalsM
     });
   });
 
-  describe("Wrapper deposits", async function () {
+  describe("Wrapper deposits/withdrawals", async function () {
     it("should mint shares to the first depositing user", async function () {
       const WrapperFactory = await ethers.getContractFactory("Wrapper");
       const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
@@ -93,28 +114,9 @@ export function shouldBehaveLikeWrapper(_signers: SignerWithAddress[], decimalsM
     });
 
     it("should calculate shares correctly", async function () {
-      const WrapperFactory = await ethers.getContractFactory("Wrapper");
-      const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
-      const transferAmount = toTokenAmount(100);
+      await distributeWrappedTokens([[1, 10], [2, 25]], this);
 
-      const deposits = [10, 25];
-
-      // Transfer some staked tokens to depositors
-      for (let i = 1; i <= 2; i++) {
-        const transferData = StakedTokenFactory.interface.encodeFunctionData('transfer', [_signers[i].address, transferAmount]);
-        await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: transferData });
-
-        const approveData = StakedTokenFactory.interface.encodeFunctionData('approve', [this.wrapper.address, transferAmount]);
-        await _signers[i].sendTransaction({ to: this.stakedToken.address, value: 0, data: approveData });
-      }
-
-      // Perform deposits
-      for (let i = 1; i <= 2; i++) {
-        const depositData = WrapperFactory.interface.encodeFunctionData('deposit', [toTokenAmount(deposits[i - 1])]);
-        await _signers[i].sendTransaction({ to: this.wrapper.address, value: 0, data: depositData });
-      }
-
-      expect(await this.wrapper.totalSupply()).to.equal(toTokenAmount(deposits.reduce((a, c) => a + c, 0)));
+      expect(await this.wrapper.totalSupply()).to.equal(toTokenAmount(35));
       expect(await this.wrapper.balanceOf(_signers[1].address)).to.equal(toTokenAmount(10));
       expect(await this.wrapper.balanceOf(_signers[2].address)).to.equal(toTokenAmount(25));
     });
@@ -122,41 +124,70 @@ export function shouldBehaveLikeWrapper(_signers: SignerWithAddress[], decimalsM
     it("should calculate shares correctly after a rebase", async function () {
       const WrapperFactory = await ethers.getContractFactory("Wrapper");
       const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
-      const deposits = [100, 50, 850];
-
-      // Transfer some staked tokens to depositors
-      for (let i = 1; i <= 3; i++) {
-        const transferData = StakedTokenFactory.interface.encodeFunctionData('transfer', [_signers[i].address, toTokenAmount(deposits[i-1])]);
-        await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: transferData });
-
-        const approveData = StakedTokenFactory.interface.encodeFunctionData('approve', [this.wrapper.address, toTokenAmount(deposits[i-1])]);
-        await _signers[i].sendTransaction({ to: this.stakedToken.address, value: 0, data: approveData });
-      }
-
-      // Perform deposits
-      for (let i = 1; i <= 3; i++) {
-        const depositData = WrapperFactory.interface.encodeFunctionData('deposit', [toTokenAmount(deposits[i - 1])]);
-        await _signers[i].sendTransaction({ to: this.wrapper.address, value: 0, data: depositData });
-      }
+      await distributeWrappedTokens([[1, 100], [2, 50], [3, 850]], this);
 
       // Increase supply by 10%
       const rebaseData = StakedTokenFactory.interface.encodeFunctionData('distributeTokens', [toTokenAmount(100), true]);
       await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: rebaseData });
 
       // Everybody should still have the same balance
-      expect(await this.wrapper.totalSupply()).to.equal(toTokenAmount(deposits.reduce((a, c) => a + c, 0)));
+      expect(await this.wrapper.totalSupply()).to.equal(toTokenAmount(1000));
       expect(await this.wrapper.balanceOf(_signers[1].address)).to.equal(toTokenAmount(100));
       expect(await this.wrapper.balanceOf(_signers[2].address)).to.equal(toTokenAmount(50));
       expect(await this.wrapper.balanceOf(_signers[3].address)).to.equal(toTokenAmount(850));
 
-      // user1 Perform withdrawal
+      // User1 Perform withdrawal
       const withdrawalData = WrapperFactory.interface.encodeFunctionData('withdraw', [toTokenAmount(50)]);
       await _signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: withdrawalData });
 
       // Everybody should be able to withdraw 10% more
-      expect(await this.wrapper.totalSupply()).to.equal(toTokenAmount(deposits.reduce((a, c) => a + c, -50)));
+      expect(await this.wrapper.totalSupply()).to.equal(toTokenAmount(950));
       expect(await this.stakedToken.balanceOf(_signers[1].address)).to.equal(toTokenAmount(55));
       expect(await this.wrapper.balanceOf(_signers[1].address)).to.equal(toTokenAmount(50));
+    });
+
+    it("should calculate shares correctly after a tokens depletion", async function () {
+      const WrapperFactory = await ethers.getContractFactory("Wrapper");
+      const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
+      await distributeWrappedTokens([[1, 100], [2, 50], [3, 850]], this);
+
+      // Increase supply by 10%
+      const rebaseData = StakedTokenFactory.interface.encodeFunctionData('distributeTokens', [toTokenAmount(100), true]);
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: rebaseData });
+
+      // User1 Perform withdrawal
+      const user1WithdrawalData = WrapperFactory.interface.encodeFunctionData('withdraw', [toTokenAmount(100)]);
+      await _signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: user1WithdrawalData });
+
+      // User2 Perform withdrawal
+      const user2WithdrawalData = WrapperFactory.interface.encodeFunctionData('withdraw', [toTokenAmount(50)]);
+      await _signers[2].sendTransaction({ to: this.wrapper.address, value: 0, data: user2WithdrawalData });
+
+      // User3 Perform withdrawal
+      const user3WithdrawalData = WrapperFactory.interface.encodeFunctionData('withdraw', [toTokenAmount(850)]);
+      await _signers[3].sendTransaction({ to: this.wrapper.address, value: 0, data: user3WithdrawalData });
+
+      // totalSupply and users balances should be 0
+      expect(await this.wrapper.totalSupply()).to.equal(toTokenAmount(0));
+      expect(await this.wrapper.balanceOf(_signers[1].address)).to.equal(toTokenAmount(0));
+      expect(await this.wrapper.balanceOf(_signers[2].address)).to.equal(toTokenAmount(0));
+      expect(await this.wrapper.balanceOf(_signers[3].address)).to.equal(toTokenAmount(0));
+
+      // User1 should be able to deposit 10% more
+      const user1ApproveData = StakedTokenFactory.interface.encodeFunctionData('approve', [this.wrapper.address, toTokenAmount(110)]);
+      const user1DepositData = WrapperFactory.interface.encodeFunctionData('deposit', [toTokenAmount(110)]);
+      await _signers[1].sendTransaction({ to: this.stakedToken.address, value: 0, data: user1ApproveData });
+      await _signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: user1DepositData });
+
+      // User2 should be able to deposit 10% more
+      const user2ApproveData = StakedTokenFactory.interface.encodeFunctionData('approve', [this.wrapper.address, toTokenAmount(55)]);
+      const user2DepositData = WrapperFactory.interface.encodeFunctionData('deposit', [toTokenAmount(55)]);
+      await _signers[2].sendTransaction({ to: this.stakedToken.address, value: 0, data: user2ApproveData });
+      await _signers[2].sendTransaction({ to: this.wrapper.address, value: 0, data: user2DepositData });
+
+      expect(await this.wrapper.totalSupply()).to.equal(toTokenAmount(165));
+      expect(await this.wrapper.balanceOf(_signers[1].address)).to.equal(toTokenAmount(110));
+      expect(await this.wrapper.balanceOf(_signers[2].address)).to.equal(toTokenAmount(55));
     });
 
     it("should revert deposits from blacklisted accounts", async function () {
@@ -187,17 +218,7 @@ export function shouldBehaveLikeWrapper(_signers: SignerWithAddress[], decimalsM
     it("should revert withdrawals from blacklisted accounts", async function () {
       const WrapperFactory = await ethers.getContractFactory("Wrapper");
       const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
-
-      // Transfer some staked tokens to depositor
-      const transferData = StakedTokenFactory.interface.encodeFunctionData('transfer', [_signers[1].address, toTokenAmount(100)]);
-      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: transferData });
-
-      const approveData = StakedTokenFactory.interface.encodeFunctionData('approve', [this.wrapper.address, toTokenAmount(100)]);
-      await _signers[1].sendTransaction({ to: this.stakedToken.address, value: 0, data: approveData });
-
-      // Let user deposit before blacklisting
-      const depositData = WrapperFactory.interface.encodeFunctionData('deposit', [toTokenAmount(10)]);
-      await _signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: depositData });
+      await distributeWrappedTokens([[1, 10]], this);
 
       // Blacklist user
       const blacklistData = StakedTokenFactory.interface.encodeFunctionData('setBlacklisted', [_signers[1].address, true]);
@@ -211,6 +232,253 @@ export function shouldBehaveLikeWrapper(_signers: SignerWithAddress[], decimalsM
       await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: whitelistData });
 
       await expect(_signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: withdrawData })).not.to.be.reverted;
+    });
+
+    it("should expose staked token amount", async function() {
+      const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
+      await distributeWrappedTokens([[1, 1000]], this);
+
+      // Increase supply by 10%
+      const rebaseData = StakedTokenFactory.interface.encodeFunctionData('distributeTokens', [toTokenAmount(100), true]);
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: rebaseData });
+
+      expect(await this.stakedToken.balanceOf(_signers[1].address)).to.equal(toTokenAmount(0));
+      expect(await this.wrapper.totalSupply()).to.equal(toTokenAmount(1000));
+      expect(await this.wrapper.balanceOf(_signers[1].address)).to.equal(toTokenAmount(1000));
+
+      // StakedToken balance
+      expect(await this.wrapper.stakedTokenBalanceOf(_signers[1].address)).to.equal(toTokenAmount(1100));
+    });
+  });
+
+  describe("Wrapper transfers", async function () {
+    it("should prevent transfers when staked token is paused", async function() {
+      const WrapperFactory = await ethers.getContractFactory("Wrapper");
+      const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
+      await distributeWrappedTokens([[1, 850], [2, 50]], this);
+
+      // Pause staked token
+      const pauseData = StakedTokenFactory.interface.encodeFunctionData('pause');
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: pauseData });
+
+      // Try to execute a transfer on the wrapper token
+      const wrapperTransferData = WrapperFactory.interface.encodeFunctionData('transfer', [_signers[2].address, toTokenAmount(450)]);
+      // Expect transfer to fail
+      await expect(_signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferData })).to.be.reverted;
+
+      // Unpause staked token
+      const unpauseData = StakedTokenFactory.interface.encodeFunctionData('unpause');
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: unpauseData });
+
+      // Execute a transfer on the wrapper token
+      await _signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferData })
+
+      // Expect transfer to succeed
+      expect(await this.wrapper.balanceOf(_signers[1].address)).to.equal(toTokenAmount(400));
+      expect(await this.wrapper.balanceOf(_signers[2].address)).to.equal(toTokenAmount(500));
+    });
+
+    it("should prevent transferFrom when staked token is paused", async function() {
+      const WrapperFactory = await ethers.getContractFactory("Wrapper");
+      const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
+      await distributeWrappedTokens([[1, 100]], this);
+
+      // User1 approves User2 to spend 100 tokens
+      const wrapperTokenApproveData = StakedTokenFactory.interface.encodeFunctionData('approve', [_signers[2].address, toTokenAmount(100)]);
+      await _signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTokenApproveData });
+
+      // Pause staked token
+      const pauseData = StakedTokenFactory.interface.encodeFunctionData('pause');
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: pauseData });
+
+      // User2 tries to transferFrom User1 to User3 to fail
+      const wrapperTransferFromData = WrapperFactory.interface.encodeFunctionData('transferFrom', [_signers[1].address, _signers[3].address, toTokenAmount(100)]);
+      // Expect transferFrom to fail
+      await expect(_signers[2].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferFromData })).to.be.reverted;
+
+      // Unpause staked token
+      const unpauseData = StakedTokenFactory.interface.encodeFunctionData('unpause');
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: unpauseData });
+
+      // User2 executes transferFrom User1 to User3
+      await _signers[2].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferFromData });
+
+      // Expect transferFrom to succeed
+      expect(await this.wrapper.balanceOf(_signers[3].address)).to.equal(toTokenAmount(100));
+    });
+
+    it("should prevent transfer and transferFrom when recipient is blacklisted", async function() {
+      const WrapperFactory = await ethers.getContractFactory("Wrapper");
+      const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
+      await distributeWrappedTokens([[1, 100]], this);
+
+      // User1 allows User3 to transfer up to 50 tokens
+      const wrapperTokenApproveData = StakedTokenFactory.interface.encodeFunctionData('approve', [_signers[3].address, toTokenAmount(50)]);
+      await _signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTokenApproveData });
+
+      // Blacklist User2
+      const blacklistRecipientData = StakedTokenFactory.interface.encodeFunctionData('setBlacklisted', [_signers[2].address, true]);
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: blacklistRecipientData });
+
+      // User1 tries to transfer 50 tokens to User2
+      const wrapperTransferData = WrapperFactory.interface.encodeFunctionData('transfer', [_signers[2].address, toTokenAmount(50)]);
+      // Expect transfer to fail
+      await expect(_signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferData })).to.be.reverted;
+
+      // Approved User3 tries to transferFrom User1 to blacklisted User2
+      const wrapperTransferFromData = WrapperFactory.interface.encodeFunctionData('transferFrom', [_signers[1].address, _signers[2].address, toTokenAmount(50)]);
+      // Expect transferFrom to fail
+      await expect(_signers[3].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferFromData })).to.be.reverted;
+
+      // Remove User2 from blacklist
+      const unblacklistRecipientData = StakedTokenFactory.interface.encodeFunctionData('setBlacklisted', [_signers[2].address, false]);
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: unblacklistRecipientData });
+
+      // User1 transfer 50 tokens to User2
+      await _signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferData });
+      // Approved User3 transferFrom User1 to no longer blacklisted User2 an amount of 50 tokens
+      await _signers[3].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferFromData });
+
+      // Expect User2 to have a balanceOf 100 tokens
+      expect(await this.wrapper.balanceOf(_signers[2].address)).to.equal(toTokenAmount(100));
+    });
+
+    it("should prevent transfer and transferFrom when sender is blacklisted", async function() {
+      const WrapperFactory = await ethers.getContractFactory("Wrapper");
+      const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
+      await distributeWrappedTokens([[1, 100]], this);
+
+      // User1 allows User2 to spend 50 tokens
+      const wrapperTokenApproveData = StakedTokenFactory.interface.encodeFunctionData('approve', [_signers[2].address, toTokenAmount(50)]);
+      await _signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTokenApproveData });
+
+      // Blacklist User1
+      const blacklistSenderData = StakedTokenFactory.interface.encodeFunctionData('setBlacklisted', [_signers[1].address, true]);
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: blacklistSenderData });
+
+      // Blacklisted User1 tries to transfer 50 tokens to User2
+      const wrapperTransferData = WrapperFactory.interface.encodeFunctionData('transfer', [_signers[2].address, toTokenAmount(50)]);
+      // Expect transfer to fail
+      await expect(_signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferData })).to.be.reverted;
+
+      // Approved User2 tries to transferFrom blacklisted User1 to User3 an amount of 50 tokens
+      const wrapperTransferFromData = WrapperFactory.interface.encodeFunctionData('transferFrom', [_signers[1].address, _signers[3].address, toTokenAmount(50)]);
+      // Expect transferFrom to fail
+      await expect(_signers[2].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferFromData })).to.be.reverted;
+
+      // Remove User1 from blacklist
+      const unblacklistSenderData = StakedTokenFactory.interface.encodeFunctionData('setBlacklisted', [_signers[1].address, false]);
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: unblacklistSenderData });
+
+      // No longer blacklisted User1 transfer 50 tokens to User2
+      await _signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferData });
+      // Approved User2 transferFrom no longer blacklisted User1 to User3 an amount of 50 tokens
+      await _signers[2].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferFromData });
+
+      // Expect User2 and User3 to have balanceOf 50 tokens
+      expect(await this.wrapper.balanceOf(_signers[2].address)).to.equal(toTokenAmount(50));
+      expect(await this.wrapper.balanceOf(_signers[3].address)).to.equal(toTokenAmount(50));
+    });
+
+    it("should prevent transferFrom when spender is blacklisted", async function() {
+      const WrapperFactory = await ethers.getContractFactory("Wrapper");
+      const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
+      await distributeWrappedTokens([[1, 100]], this);
+
+      // User1 allows User2 to spend 50 tokens
+      const wrapperTokenApproveData = StakedTokenFactory.interface.encodeFunctionData('approve', [_signers[2].address, toTokenAmount(50)]);
+      await _signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTokenApproveData });
+
+      // Blacklist User2
+      const blacklistSenderData = StakedTokenFactory.interface.encodeFunctionData('setBlacklisted', [_signers[2].address, true]);
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: blacklistSenderData });
+
+      // Approved and blacklisted User2 tries to transferFrom User1 to User3 an amount of 50 tokens
+      const wrapperTransferFromData = WrapperFactory.interface.encodeFunctionData('transferFrom', [_signers[1].address, _signers[3].address, toTokenAmount(50)]);
+      // Expect transferFrom to fail
+      await expect(_signers[2].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferFromData })).to.be.reverted;
+
+      // Remove User2 from blacklist
+      const unblacklistSenderData = StakedTokenFactory.interface.encodeFunctionData('setBlacklisted', [_signers[2].address, false]);
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: unblacklistSenderData });
+
+      // Approved and no longer blacklisted User2 transferFrom User1 to User3 an amount of 50 tokens
+      await _signers[2].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferFromData });
+
+      // Expect User3 to have balanceOf 50 tokens
+      expect(await this.wrapper.balanceOf(_signers[3].address)).to.equal(toTokenAmount(50));
+    });
+
+    it("should prevent approving a blacklisted spender", async function() {
+      const WrapperFactory = await ethers.getContractFactory("Wrapper");
+      const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
+      await distributeWrappedTokens([[1, 100]], this);
+
+      // Blacklist User2
+      const blacklistSenderData = StakedTokenFactory.interface.encodeFunctionData('setBlacklisted', [_signers[2].address, true]);
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: blacklistSenderData });
+
+      // User1 allows User2 to spend 50 tokens
+      const wrapperTokenApproveData = StakedTokenFactory.interface.encodeFunctionData('approve', [_signers[2].address, toTokenAmount(50)]);
+      await expect(_signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTokenApproveData })).to.be.reverted;
+
+      // Remove User2 from blacklist
+      const unblacklistSenderData = StakedTokenFactory.interface.encodeFunctionData('setBlacklisted', [_signers[2].address, false]);
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: unblacklistSenderData });
+
+      await _signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTokenApproveData });
+
+      // User2 transferFrom User1 to User3 an amount of 50 tokens
+      const wrapperTransferFromData = WrapperFactory.interface.encodeFunctionData('transferFrom', [_signers[1].address, _signers[3].address, toTokenAmount(50)]);
+      // Approved and no longer blacklisted User2 transferFrom User1 to User3 an amount of 50 tokens
+      await _signers[2].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferFromData });
+
+      // Expect User3 to have balanceOf 50 tokens
+      expect(await this.wrapper.balanceOf(_signers[3].address)).to.equal(toTokenAmount(50));
+    });
+
+    it("should prevent a blacklisted spender from performing transferFrom", async function() {
+      const WrapperFactory = await ethers.getContractFactory("Wrapper");
+      const StakedTokenFactory = await ethers.getContractFactory("StakedToken");
+      await distributeWrappedTokens([[1, 100]], this);
+
+      // User1 allows User2 to spend 50 tokens
+      const wrapperTokenApproveData = StakedTokenFactory.interface.encodeFunctionData('approve', [_signers[2].address, toTokenAmount(50)]);
+      await _signers[1].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTokenApproveData });
+
+      // Blacklist User2
+      const blacklistSenderData = StakedTokenFactory.interface.encodeFunctionData('setBlacklisted', [_signers[2].address, true]);
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: blacklistSenderData });
+
+      // User2 tries to transferFrom User1 to User3 an amount of 50 tokens
+      const wrapperTransferFromData = WrapperFactory.interface.encodeFunctionData('transferFrom', [_signers[1].address, _signers[3].address, toTokenAmount(50)]);
+      // Approved and blacklisted User2 tries to transferFrom User1 to User3 an amount of 50 tokens
+      await expect(_signers[2].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferFromData })).to.be.reverted;
+
+      // Remove User2 from blacklist
+      const unblacklistSenderData = StakedTokenFactory.interface.encodeFunctionData('setBlacklisted', [_signers[2].address, false]);
+      await _signers[0].sendTransaction({ to: this.stakedToken.address, value: 0, data: unblacklistSenderData });
+
+      // Approved and no longer blacklisted User2 transferFrom User1 to User3 an amount of 50 tokens
+      await _signers[2].sendTransaction({ to: this.wrapper.address, value: 0, data: wrapperTransferFromData });
+
+      // Expect User3 to have balanceOf 50 tokens
+      expect(await this.wrapper.balanceOf(_signers[3].address)).to.equal(toTokenAmount(50));
+    });
+  });
+
+  describe("Wrapper admin", async function() {
+    it("token owner should able to change name and symbol", async function() {
+      const WrapperFactory = await ethers.getContractFactory("Wrapper");
+
+      const setNameData = WrapperFactory.interface.encodeFunctionData('setName', ['Foo']);
+      await _signers[0].sendTransaction({ to: this.wrapper.address, value: 0, data: setNameData });
+
+      const setSymbolData = WrapperFactory.interface.encodeFunctionData('setSymbol', ['Bar']);
+      await _signers[0].sendTransaction({ to: this.wrapper.address, value: 0, data: setSymbolData });
+
+      expect(await this.wrapper.name()).to.equal('Foo');
+      expect(await this.wrapper.symbol()).to.equal('Bar');
     });
   });
 }
