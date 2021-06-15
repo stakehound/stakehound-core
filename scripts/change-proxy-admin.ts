@@ -1,7 +1,4 @@
-
-import { ethers, upgrades } from "hardhat";
-import { Contract, ContractFactory } from "ethers";
-import { StakedToken } from "../typechain/StakedToken";
+import { upgrades } from "hardhat";
 
 async function main(): Promise<void> {
   // Hardhat always runs the compile task when running scripts through it.
@@ -18,7 +15,6 @@ async function main(): Promise<void> {
   // Proxy admin is loaded from .openzeppelin/network.json
 
   console.log("Changing proxy admin of stakedToken...");
-  // @ts-ignore
   await upgrades.admin.transferProxyAdminOwnership(newOwner);
   console.log("Changed proxy admin of stakedToken to:", newOwner);
 }

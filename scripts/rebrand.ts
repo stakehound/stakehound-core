@@ -1,6 +1,6 @@
 
-import { ethers, upgrades } from "hardhat";
-import { Contract, ContractFactory } from "ethers";
+import { ethers } from "hardhat";
+import { ContractFactory } from "ethers";
 import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
@@ -10,8 +10,8 @@ async function main(): Promise<void> {
   // await run("compile");
 
   const stakedTokenAddress = process.env.STAKED_TOKEN_ADDRESS || '';
-  const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
+  const StakedTokenFactory: ContractFactory = await ethers.getContractFactory("StakedToken");
+  const stakedToken = StakedTokenFactory.attach(stakedTokenAddress) as StakedToken;
 
   const newName = "stakedFIRO";
   const newSymbol = "stFIRO";

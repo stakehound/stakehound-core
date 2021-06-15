@@ -1,6 +1,6 @@
 
 import { ethers } from "hardhat";
-import { Contract, ContractFactory } from "ethers";
+import { ContractFactory } from "ethers";
 import { StakedToken } from "../typechain/StakedToken";
 
 async function main(): Promise<void> {
@@ -11,15 +11,15 @@ async function main(): Promise<void> {
 
   const stakedTokenAddress = process.env.STAKED_TOKEN_ADDRESS || '';
 
-  const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-  const stakedToken = StakedToken.attach(stakedTokenAddress) as StakedToken;
+  const StakedTokenFactory: ContractFactory = await ethers.getContractFactory("StakedToken");
+  const stakedToken = StakedTokenFactory.attach(stakedTokenAddress) as StakedToken;
 
   const filter = stakedToken.filters.LogTokenDistribution(null, null, null, null);
   const rebases = await stakedToken.queryFilter(filter, 0);
 
   console.log('block,timestamp,oldTotalSupply,newTotalSupply');
 
-  for(let r of rebases) {
+  for(const r of rebases) {
     const date =  new Date((await r.getBlock()).timestamp*1000);
     console.log(`${r.blockNumber},"${date.toUTCString()}",${r.args?.oldTotalSupply},${r.args?.newTotalSupply}`)
   }

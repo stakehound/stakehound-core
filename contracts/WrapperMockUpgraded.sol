@@ -8,8 +8,7 @@ import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { StakedToken } from "./StakedToken.sol";
 
-//contract Wrapper is ERC20PausableUpgradeable, OwnableUpgradeable {
-contract Wrapper is ERC20Upgradeable, OwnableUpgradeable {
+contract WrapperMockUpgraded is ERC20Upgradeable, OwnableUpgradeable {
     using SafeMathUpgradeable for uint256;
 
     StakedToken token;
@@ -46,12 +45,8 @@ contract Wrapper is ERC20Upgradeable, OwnableUpgradeable {
         _;
     }
 
-    function initialize(address _token, string memory name_, string memory symbol_) public initializer {
-        __ERC20_init(name_, symbol_);
-        __Ownable_init();
-
-        _name = name_;
-        _symbol = symbol_;
+    function initialize(address _token, string memory name, string memory symbol) public initializer {
+        __ERC20_init(name, symbol);
 
         token = StakedToken(_token);
         _setupDecimals(token.decimals());
@@ -61,7 +56,7 @@ contract Wrapper is ERC20Upgradeable, OwnableUpgradeable {
         return token.balanceOf(address(this));
     }
 
-    function deposit(uint256 _amount) public whenNotPaused {
+    function deposit(uint256 _amount) public whenNotPaused{
         uint256 _before = balance();
 
         require(token.transferFrom(msg.sender, address(this), _amount));
@@ -113,23 +108,8 @@ contract Wrapper is ERC20Upgradeable, OwnableUpgradeable {
     ) public override validRecipient(to) whenNotPaused returns (bool) {
         require(!token.isBlacklisted(from), "from blacklisted");
         require(!token.isBlacklisted(to), "to blacklisted");
-        require(!token.isBlacklisted(msg.sender), "sender blacklisted");
 
         return super.transferFrom(from, to, value);
-    }
-
-    function approve(address spender, uint256 value) public override returns (bool) {
-        require(!token.isBlacklisted(msg.sender), "owner blacklisted");
-        require(!token.isBlacklisted(spender), "spender blacklisted");
-
-        return super.approve(spender, value);
-    }
-
-    /**
-     * @dev Returns the name of the token.
-     */
-    function name() public override view returns (string memory) {
-        return _name;
     }
 
     /**
@@ -138,14 +118,6 @@ contract Wrapper is ERC20Upgradeable, OwnableUpgradeable {
      */
     function setName(string calldata name_) external onlyOwner {
         _name = name_;
-    }
-
-    /**
-     * @dev Returns the symbol of the token, usually a shorter version of the
-     * name.
-     */
-    function symbol() public override view returns (string memory) {
-        return _symbol;
     }
 
     /**
@@ -158,5 +130,9 @@ contract Wrapper is ERC20Upgradeable, OwnableUpgradeable {
 
     function stakedTokenBalanceOf(address who) external view returns (uint256) {
         return balanceOf(who).mul(balance()).div(totalSupply());
+    }
+
+    function sayHi() public view returns (string memory) {
+        return "hi";
     }
 }

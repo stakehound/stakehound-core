@@ -7,8 +7,9 @@ import { MockDownstream } from "../typechain/MockDownstream";
 import { DownstreamCaller } from "../typechain/DownstreamCaller";
 import DownstreamCallerArtifact from "../artifacts/contracts/DownstreamCaller.sol/DownstreamCaller.json";
 import { deployContract } from "ethereum-waffle";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 
-export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultiplier: BigNumberish): void {
+export function shouldBehaveLikeStakedToken(_signers: SignerWithAddress[], decimalsMultiplier: BigNumberish): void {
   function toTokenAmount(amount: BigNumberish): BigNumber {
     return ethers.BigNumber.from(amount).mul(decimalsMultiplier);
   }
@@ -47,8 +48,8 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       await instance.transfer(recipient, transferAmount);
 
       // Check downstream caller still works after upgrade
-      let ABI = ["function updateOneArg(uint256 u)"];
-      let iface = new ethers.utils.Interface(ABI);
+      const ABI = ["function updateOneArg(uint256 u)"];
+      const iface = new ethers.utils.Interface(ABI);
       const data = iface.encodeFunctionData("updateOneArg", [12345]);
       await instance.addTransaction(mockDownstream.address, data);
 
@@ -103,7 +104,6 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
     });
 
     it("should not be callable by others", async function () {
-      const userAddress = await _signers[1].getAddress();
       const stakedTokenAsUser = this.stakedToken.connect(_signers[1]);
       await expect(stakedTokenAsUser.setName("anything")).to.be.reverted;
     });
@@ -315,8 +315,8 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       const stakedToken: StakedToken = this.stakedToken;
       const mockDownstream: MockDownstream = this.mockDownstream;
 
-      let ABI = ["function updateOneArg(uint256 u)"];
-      let iface = new ethers.utils.Interface(ABI);
+      const ABI = ["function updateOneArg(uint256 u)"];
+      const iface = new ethers.utils.Interface(ABI);
       const data = iface.encodeFunctionData("updateOneArg", [12345]);
 
       await stakedToken.addTransaction(mockDownstream.address, data);
@@ -331,8 +331,8 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       const stakedToken: StakedToken = this.stakedToken;
       const mockDownstream: MockDownstream = this.mockDownstream;
 
-      let ABI = ["function updateOneArg(uint256 u)"];
-      let iface = new ethers.utils.Interface(ABI);
+      const ABI = ["function updateOneArg(uint256 u)"];
+      const iface = new ethers.utils.Interface(ABI);
       const data = iface.encodeFunctionData("updateOneArg", [12345]);
 
       await stakedToken.addTransaction(mockDownstream.address, data);
@@ -350,8 +350,8 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       const stakedToken: StakedToken = this.stakedToken;
       const mockDownstream: MockDownstream = this.mockDownstream;
 
-      let ABI = ["function updateOneArg(uint256 u)"];
-      let iface = new ethers.utils.Interface(ABI);
+      const ABI = ["function updateOneArg(uint256 u)"];
+      const iface = new ethers.utils.Interface(ABI);
       const data = iface.encodeFunctionData("updateOneArg", [12345]);
 
       await stakedToken.addTransaction(mockDownstream.address, data);
@@ -368,14 +368,14 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       const stakedToken: StakedToken = this.stakedToken;
       const mockDownstream: MockDownstream = this.mockDownstream;
 
-      let ABI = ["function updateOneArg(uint256 u)"];
-      let iface = new ethers.utils.Interface(ABI);
+      const ABI = ["function updateOneArg(uint256 u)"];
+      const iface = new ethers.utils.Interface(ABI);
       const data = iface.encodeFunctionData("updateOneArg", [12345]);
 
       await stakedToken.addTransaction(mockDownstream.address, data);
       expect(await stakedToken.transactionsSize()).to.equal(1);
 
-      const downstreamCaller = (await deployContract(_signers[0], DownstreamCallerArtifact, [])) as DownstreamCaller;
+      const downstreamCaller = (await deployContract(_signers[0] as unknown as Signer, DownstreamCallerArtifact, [])) as unknown as DownstreamCaller;
       await downstreamCaller.transferOwnership(stakedToken.address);
 
       await stakedToken.setDownstreamCaller(downstreamCaller.address);
@@ -394,8 +394,8 @@ export function shouldBehaveLikeStakedToken(_signers: Signer[], decimalsMultipli
       const stakedTokenAsUser = this.stakedToken.connect(_signers[1]);
       const mockDownstream: MockDownstream = this.mockDownstream;
 
-      let ABI = ["function updateOneArg(uint256 u)"];
-      let iface = new ethers.utils.Interface(ABI);
+      const ABI = ["function updateOneArg(uint256 u)"];
+      const iface = new ethers.utils.Interface(ABI);
       const data = iface.encodeFunctionData("updateOneArg", [12345]);
 
       await expect(stakedTokenAsUser.addTransaction(mockDownstream.address, data)).to.be.reverted;

@@ -1,5 +1,4 @@
 import chai from "chai";
-import { Signer } from "@ethersproject/abstract-signer";
 import { deployContract, solidity } from "ethereum-waffle";
 import { ethers, upgrades } from "hardhat";
 
@@ -8,18 +7,19 @@ import MockDownstreamArtifact from "../artifacts/contracts/mocks/MockDownstream.
 import { StakedToken } from "../typechain/StakedToken";
 import { Wrapper } from "../typechain/Wrapper";
 import { MockDownstream } from "../typechain/MockDownstream";
-import { shouldBehaveLikeStakedToken } from "./StakedToken.behavior";
 import { Contract, ContractFactory } from "ethers";
+import { Signer } from "@ethersproject/abstract-signer";
+import { shouldBehaveLikeWrapper } from "./Wrapper.behavior";
 
 chai.use(solidity);
 
 setTimeout(async function () {
-  const signers: Signer[] = await ethers.getSigners();
-  const admin: Signer = signers[0];
+  const signers = await ethers.getSigners();
+  const admin = signers[0] as Signer;
   const decimals = 18;
   const decimalsMultiplier = ethers.BigNumber.from(10).pow(decimals);
 
-  describe("StakedToken", function () {
+  describe("WrapperStakedToken", function () {
     beforeEach(async function () {
       this.name = "stakedTST";
       this.symbol = "stTST";
@@ -30,23 +30,23 @@ setTimeout(async function () {
       this.initialSupply = ethers.BigNumber.from(1000).mul(this.decimalsMultiplier);
 
 
-      const StakedToken: ContractFactory = await ethers.getContractFactory("StakedToken");
-      const stakedToken: Contract = await upgrades.deployProxy(StakedToken, [this.name, this.symbol, this.decimals, this.maxSupply, this.initialSupply]);
+      const StakedTokenFactory: ContractFactory = await ethers.getContractFactory("StakedToken");
+      const stakedToken: Contract = await upgrades.deployProxy(StakedTokenFactory, [this.name, this.symbol, this.decimals, this.maxSupply, this.initialSupply]);
       await stakedToken.deployed();
       this.stakedToken = stakedToken as StakedToken;
 
 
       this.wrapperSymbol = "wstTST";
       this.wrapperName = "wrappedStakedTST";
-      const Wrapper: ContractFactory = await ethers.getContractFactory("Wrapper");
-      const wrapper: Contract = await upgrades.deployProxy(Wrapper, [this.stakedToken, this.wrapperName, this.wrapperSymbol]);
+      const WrapperFactory: ContractFactory = await ethers.getContractFactory("Wrapper");
+      const wrapper: Contract = await upgrades.deployProxy(WrapperFactory, [this.stakedToken.address, this.wrapperName, this.wrapperSymbol]);
       await wrapper.deployed();
       this.wrapper = wrapper as Wrapper;
 
-      this.mockDownstream = (await deployContract(admin, MockDownstreamArtifact, [])) as MockDownstream;
+      this.mockDownstream = (await deployContract(admin, MockDownstreamArtifact, [])) as unknown as MockDownstream;
     });
 
-    shouldBehaveLikeStakedToken(signers, decimalsMultiplier);
+    shouldBehaveLikeWrapper(signers, decimalsMultiplier);
   });
 
   run();

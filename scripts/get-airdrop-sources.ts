@@ -1,16 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { ethers } from "hardhat";
 import { BigNumber, Contract } from "ethers";
 import Axios from "axios";
 import fs from "fs";
-import path from "path";
 
 import stakedTokenABI from '../stakedTokenABI.json'; // This import style requires "esModuleInterop", see "side notes"
 import poolTokenABI from '../poolTokenABI.json'; // This import style requires "esModuleInterop", see "side notes"
 
 
-const cliProgress = require('cli-progress');
-const _colors = require('colors');
+import * as cliProgress from 'cli-progress';
+import * as  _colors from 'colors';
 
 const alchemyUrl =  `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`;
 const etherscanUrl = 'https://api.etherscan.io/api';

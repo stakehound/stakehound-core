@@ -10,9 +10,10 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es5"
+    "target": "es5",
+    "skipLibCheck": true
   },
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "typechain"],
   "include": [
     "@types/**/*",
     "artifacts/**/*",
@@ -21,12 +22,6 @@
     "scripts/**/*",
     "tasks/**/*",
     "test/**/*",
-    "typechain/**/*",
     "hardhat.config.ts"
-  ],
-  "files": [
-    "./node_modules/@nomiclabs/hardhat-ethers/src/type-extensions.d.ts",
-    "./node_modules/@nomiclabs/hardhat-waffle/src/type-extensions.d.ts",
-    "./node_modules/@openzeppelin/hardhat-upgrades/src/type-extensions.d.ts"
   ]
 }

@@ -1,13 +1,10 @@
-import { Greeter } from "../typechain/Greeter";
-
-export interface TypechainConfig {
-  outDir?: string;
-  target?: "ethers-v4" | "ethers-v5" | "truffle-v4" | "truffle-v5" | "web3-v1";
-}
+import { EtherscanConfig } from "@nomiclabs/hardhat-etherscan/dist/src/types";
+import { TypechainConfig } from "hardhat-typechain/dist/src/types";
 
 declare module "hardhat/types" {
   interface HardhatUserConfig {
     typechain?: TypechainConfig;
+    etherscan?: EtherscanConfig
   }
 
   interface ProjectPaths {
