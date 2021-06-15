@@ -85,6 +85,7 @@
     "test": "hardhat test",
     "typechain": "hardhat typechain",
     "deploy": "hardhat run scripts/deploy.ts",
+    "deploy-wrapper": "hardhat run scripts/deploy-wrapper.ts",
     "script": "hardhat run",
     "accounts": "hardhat accounts"
   },
